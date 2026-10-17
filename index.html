@@ -1036,6 +1036,17 @@ async function analyzePhotos(btn){
     }
     btn.disabled = false; return;
   }
+  if (PWA){
+    btn.disabled = true; out.textContent = 'Koçun fotoğraflara bakıyor… (30 sn kadar sürebilir)';
+    try {
+      const images = await Promise.all([first.blob, last.blob].map(async b => ({media_type: b.type && /^image\/(jpeg|png|webp)$/.test(b.type) ? b.type : 'image/jpeg', data: await blobB64(b)})));
+      out.innerHTML = fmtAI(await coachServer('', [{role:'user', content:prompt}], images));
+      btn.disabled = false; return;
+    } catch(e){
+      btn.disabled = false;
+      out.textContent = (e && e.message) || 'İnceleme yapılamadı. Tekrar dene.'; return;
+    }
+  }
   const files = [new File([first.blob], 'baslangic-'+first.d+'.jpg', {type:'image/jpeg'}), new File([last.blob], 'son-'+last.d+'.jpg', {type:'image/jpeg'})];
   if (navigator.canShare && navigator.canShare({files})){
     try { await navigator.clipboard.writeText(prompt); } catch(e){}
@@ -1489,7 +1500,7 @@ function renderProgress(){
 let chatBusy = false, chatCtl = null;
 const COACH_QS = ['Bugün ne yapacağım?','Dışarıda yemek yiyeceğim, ne yiyeyim?','Bu hafta nasıl gidiyorum?','Squat yaparken dizim ağrıyor','Antrenmanı kaçırdım, ne yapayım?','Tahlil sonuçlarımı yazacağım'];
 function renderCoach(){
-  if (!sample){
+  if (!sample && !PWA){
     view.innerHTML = `<h2>Koçuna sor</h2><p class="muted small">Koçun Claude uygulamasında cevap verir. Sorunu seç veya yaz: son 14 günün, ağırlıkların ve cevapların soruna otomatik eklenir.</p>
       <div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-extask="${esc(q)}">${esc(q)} ↗</button>`).join('')}</div>
       <div class="composer"><textarea id="chatIn" placeholder="Sorunu yaz…" aria-label="Soru"></textarea><button type="button" class="btn primary" data-extask="">Claude’da sor ↗</button></div>
@@ -1528,10 +1539,20 @@ function contextText(){
 function coachRules(){
   return 'Sen bu kullanıcının kişisel antrenörü ve beslenme koçusun. Kullanıcı hiçbir şey bilmiyor; ona tavsiye değil, net talimat ver ("Şunu yap", "Bunu ye", "Bugün şu ağırlıkla çalış"). Her zaman Türkçe, kısa (en fazla 8-10 satır), somut sayılarla yaz. Terimleri basitçe açıkla. Plana sadık kal; planı değiştirmen gerekiyorsa nedenini tek cümleyle söyle. Eklemde keskin ağrı, hastalık, ilaç veya tahlil yorumu gibi tıbbi konularda doktora gitmesini söyle. Markdown başlık kullanma.\n\n' + contextText();
 }
+/* installed app: the coach answers through our server, which holds the Claude API key */
+async function coachServer(system, messages, images, signal){
+  let r;
+  try { r = await fetch(PUSH_URL + '/coach', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({device_id:deviceId(), system, messages, images}), signal}); }
+  catch(e){ throw (e && e.name === 'AbortError') ? {code:'cancelled'} : {code:'offline', server:true, message:'İnternet bağlantını kontrol et.'}; }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.error || typeof j.text !== 'string') throw {code:j.error || 'api', server:true, message:j.message || 'Yanıt alınamadı. Tekrar dene.'};
+  return j.text;
+}
+function blobB64(blob){ return new Promise((ok, bad) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = bad; fr.readAsDataURL(blob); }); }
 async function sendChat(text){
   const err = document.getElementById('chatErr');
   if (!text.trim()){ err.textContent = 'Önce bir mesaj yaz.'; err.hidden = false; return; }
-  if (!sample){ err.textContent = 'Koç sohbeti burada çalışmıyor. Uygulamayı claude.ai’da aç.'; err.hidden = false; return; }
+  if (!sample && !PWA){ err.textContent = 'Koç sohbeti burada çalışmıyor. Uygulamayı claude.ai’da aç.'; err.hidden = false; return; }
   state.chat.push({role:'user', content:text.trim()});
   if (state.chat.length > 30) state.chat = state.chat.slice(-30);
   chatBusy = true; renderCoach();
@@ -1541,7 +1562,9 @@ async function sendChat(text){
   const turns = [{role:'user', content:rules}].concat(state.chat.slice(-12));
   chatCtl = new AbortController();
   try {
-    const {text:ans} = await sample(turns, {cache:false, signal:chatCtl.signal, onText:({text}) => { bub.innerHTML = fmtAI(text); }});
+    const ans = sample
+      ? (await sample(turns, {cache:false, signal:chatCtl.signal, onText:({text}) => { bub.innerHTML = fmtAI(text); }})).text
+      : await coachServer(rules, state.chat.slice(-12), [], chatCtl.signal);
     state.chat.push({role:'assistant', content:ans});
   } catch(e){
     if (e && e.text) state.chat.push({role:'assistant', content:e.text});
@@ -1549,7 +1572,8 @@ async function sendChat(text){
     if (code !== 'cancelled'){
       chatBusy = false; save(); renderCoach();
       const er = document.getElementById('chatErr');
-      er.textContent = ({not_granted:'Koçun Claude’u kullanmasına izin verilmedi.', rate_limited:'Çok fazla mesaj gönderildi. Biraz bekleyip tekrar dene.', session_expired:'Oturumun kapanmış. Tekrar giriş yap.'})[code] || 'Yanıt alınamadı. Tekrar dene.';
+      er.textContent = (e && e.server && e.message) || ({not_granted:'Koçun Claude’u kullanmasına izin verilmedi.', rate_limited:'Çok fazla mesaj gönderildi. Biraz bekleyip tekrar dene.', session_expired:'Oturumun kapanmış. Tekrar giriş yap.'})[code] || 'Yanıt alınamadı. Tekrar dene.';
+      if (code === 'no_key' || code === 'not_registered' || code === 'limit') er.insertAdjacentHTML('afterend', `<button type="button" class="btn full" style="margin-top:8px" data-extask="${esc(text.trim())}">Bunun yerine Claude uygulamasında sor ↗</button>`);
       er.hidden = false; return;
     }
   }
