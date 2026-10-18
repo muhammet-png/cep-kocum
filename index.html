@@ -180,6 +180,12 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:10px}
 .pgrid figure{margin:0;min-width:0;position:relative}
 .pslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.pslot.empty,.pslot.filled{aspect-ratio:3/4;padding:0;position:relative;overflow:hidden}
+.pslot.empty{cursor:pointer;align-items:center;justify-content:center;gap:8px;border-style:dashed}
+.pslot.empty span{font-weight:700;font-size:15px}
+.pslot.empty b{width:32px;height:32px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-size:20px;line-height:1}
+.pslot.filled img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.psaved{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700}
 .pslot{border:1px solid var(--line);border-radius:14px;padding:8px;min-width:0;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
 .pslot-add{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;font-weight:700;font-size:14px}
 .pslot-add b{width:28px;height:28px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-size:18px;line-height:1;flex:0 0 auto}
@@ -1169,24 +1175,24 @@ function compressImage(file){
 }
 const dShort = d => d.split('-').reverse().join('.');
 /* progress photos. Adding: photos taken today go into the Ön / Yan / Arka slots as small squares, and
-   Kaydet stores them on today's date and empties the slots (at most PHOTO_MAX per day). Viewing: pick a
+   Kaydet stores them on today's date and empties the slots (one photo per pose per day). Viewing: pick a
    date and that day's photos open in a window in front of the app; closing it leaves nothing on the page. */
-const PHOTO_MAX = 4;
-let photoStage = [], photoSeq = 0;
+let photoStage = [], photoSeq = 0, slotUrls = [];
 async function renderPhotos(){
   const box = document.getElementById('photoBox'); if (!box) return;
   const seq = ++photoSeq; /* only the latest render writes, so overlapping renders never show stale slots */
   let all;
   try { all = await PDB.all(); } catch(e){ box.innerHTML = '<p class="muted small">Bu tarayıcı fotoğraf saklamaya izin vermiyor. Uygulamayı telefona kurduğunda çalışır.</p>'; return; }
   if (seq !== photoSeq || !document.body.contains(box)) return;
-  const k = todayKey(), days = [...new Set(all.map(p => p.d))].sort(), savedToday = all.filter(p => p.d === k).length;
-  const room = Math.max(0, PHOTO_MAX - savedToday - photoStage.length);
-  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Bir günde en fazla ${PHOTO_MAX} fotoğraf.</p>`;
-  h += `<p class="small" style="margin-top:12px;font-weight:700">Bugün ekle${savedToday ? ` <span class="muted" style="font-weight:500">· bugün ${savedToday} kayıtlı</span>` : ''}</p><div class="pslots">${Object.keys(POSES).map(p => {
-    const st = photoStage.filter(x => x.pose === p);
-    return `<div class="pslot"><label class="pslot-add${room ? '' : ' off'}"><span>${POSES[p]}</span><b>+</b>${room ? `<input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden>` : ''}</label>
-      ${st.length ? `<div class="pslot-thumbs">${st.map(x => `<span class="pthumb"><img src="${x.url}" alt="${POSES[p]} (kaydedilmedi)"><button type="button" data-unstage="${x.id}" aria-label="Çıkar">×</button></span>`).join('')}</div>` : ''}</div>`; }).join('')}</div>`;
-  if (!room && !photoStage.length) h += `<p class="muted small" style="margin-top:6px">Bugün ${PHOTO_MAX} fotoğraf kaydedildi. Değiştirmek için aşağıdan bugünü açıp birini sil.</p>`;
+  const k = todayKey(), days = [...new Set(all.map(p => p.d))].sort();
+  slotUrls.forEach(u => URL.revokeObjectURL(u)); slotUrls = [];
+  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Her gün için ön, yan ve arka olmak üzere 3 fotoğraf.</p>`;
+  /* one slot per pose: empty shows the pose name and +, a chosen photo fills the whole slot */
+  h += `<p class="small" style="margin-top:12px;font-weight:700">Bugün ekle</p><div class="pslots">${Object.keys(POSES).map(p => {
+    const st = photoStage.find(x => x.pose === p), saved = all.find(x => x.d === k && x.pose === p);
+    if (st) return `<div class="pslot filled"><img src="${st.url}" alt="${POSES[p]} (kaydedilmedi)"><button type="button" class="pdelx" data-unstage="${st.id}" aria-label="${POSES[p]} fotoğrafını çıkar">×</button></div>`;
+    if (saved){ const u = URL.createObjectURL(saved.blob); slotUrls.push(u); return `<div class="pslot filled"><img src="${u}" alt="${POSES[p]} (kaydedildi)"><span class="psaved">✓</span></div>`; }
+    return `<label class="pslot empty"><span>${POSES[p]}</span><b>+</b><input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden></label>`; }).join('')}</div>`;
   if (photoStage.length) h += `<button type="button" class="btn primary full" data-act="photoSave" style="margin-top:10px">Kaydet (${photoStage.length} fotoğraf)</button>`;
   h += `<p class="small" style="margin-top:16px;font-weight:700">Fotoğraflarına bak</p>
     <label class="f" style="margin-top:6px;display:block">Tarih seç<input type="date" id="photoDate" value="" max="${k}" style="width:100%;box-sizing:border-box"></label>
@@ -1199,7 +1205,7 @@ async function renderPhotos(){
 async function stagePhoto(file, pose){
   try {
     const all = await PDB.all(), k = todayKey();
-    if (all.filter(p => p.d === k).length + photoStage.length >= PHOTO_MAX){ toast('Bir günde en fazla ' + PHOTO_MAX + ' fotoğraf'); return; }
+    if (photoStage.some(x => x.pose === pose) || all.some(p => p.d === k && p.pose === pose)){ toast('Bugün için ' + POSES[pose] + ' fotoğrafı zaten var'); return; }
     const blob = await compressImage(file);
     photoStage.push({id: Date.now() + '-' + Math.random().toString(36).slice(2,7), pose, blob, url: URL.createObjectURL(blob)});
   } catch(e){ toast(e && e.message ? e.message : 'Fotoğraf eklenemedi'); }
