@@ -264,7 +264,7 @@ ul.clean,ol.clean{margin:0;padding-left:20px} ul.clean li,ol.clean li{margin:5px
 .meal p{font-size:13px;color:var(--muted);margin-top:2px}
 .supp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 0;border-top:1px solid var(--line)}
 .supp h3{flex:1 1 9em;min-width:0}
-.supp .pill{flex:0 1 auto;white-space:normal;max-width:100%}
+.supp .pill{flex:0 1 auto;white-space:normal;max-width:100%;margin-left:auto;text-align:right}
 .supp:first-child{border-top:0}
 .supp p{flex-basis:100%;font-size:13px;color:var(--muted)}
 .shop label{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14px}
@@ -1541,9 +1541,24 @@ function renderWorkout(){
     <li><b>Makinede tam o ağırlık yoksa</b> en yakın ağırlığı seç ve onu yaz. Dambıl ağırlıkları tek el içindir.</li>
     <li><b>Bitirince</b> en alttaki “Antrenmanı bitir” düğmesine bas ve nasıl geçtiğini seç.</li></ol></details>`;
   const todays = SCHEDULE[dow];
-  if (!todays && !pickedWorkout && !(l && l.w)){
+  /* rest day: today's job is the walk; the next workout is only a preview, never shown as today's */
+  if (!todays && !pickedWorkout && !(l && l.w) && !missedWorkout()){
+    const nk = nextWorkoutKey(dow), walked = l && l.c && l.c.yuruyus, walking = state.sess && state.sess.kind === 'walk';
+    const guide = html.replace('style="margin-top:14px" open>', 'style="margin-top:14px">');
+    html = `<div class="card" style="margin-top:14px"><span class="pill p-green">Bugün · ${DAYNAMES[dow]}</span><h3 style="margin-top:8px">Dinlenme günü: eğimli yürüyüş</h3>
+      <ul class="clean small" style="margin-top:6px"><li>Koşu bandında %8–10 eğim, 5–5,5 km/s, 40–50 dakika.</li><li>Salona gidemezsen dışarıda yokuşlu ve tempolu yürü.</li><li>Gün hedefi 10.000 adım. Bugün ağırlık yok, kasların toparlanıyor.</li></ul>
+      ${walked ? `<p class="small" style="margin-top:10px;color:var(--green);font-weight:700">Yürüyüş yapıldı ✓${l.walkMin ? ' · ' + l.walkMin + ' dk' : ''}</p>`
+        : `<button type="button" class="btn primary full" data-act="walkStart" style="margin-top:12px">${walking ? 'Yürüyüş sürüyor · bitir' : 'Yürüyüşü başlat'}</button>`}</div>
+      <div class="card" style="margin-top:12px"><p class="muted small" style="font-weight:700;letter-spacing:.04em">SIRADAKİ ANTRENMAN</p><h3 style="margin-top:4px">${WORKOUTS[nk].day} · ${esc(WORKOUTS[nk].name)}</h3>
+      <p class="muted small" style="margin-top:4px">${WORKOUTS[nk].ex.length} hareket. O gün ağırlıkların burada hazır olacak.</p>
+      <button type="button" class="btn full" data-pick="${nk}" style="margin-top:10px">Hareketlere göz at</button></div>` + guide;
+    view.innerHTML = html;
+    return;
+  }
+  if (!todays && !(l && l.w)){
     const mw = missedWorkout();
-    html += `<div class="card" style="margin-top:12px"><h3>${mw ? 'Bugün kaçırdığın antrenmanı yap' : 'Bugün dinlenme günü'}</h3><p class="muted small" style="margin-top:4px">${mw ? 'Dünkü '+WORKOUTS[mw].name+' yapılmadı. Bugün onu yap, kayıt bugüne yazılır.' : 'Sıradaki antrenmanın aşağıda. Bugün ağırlık yok: 40–50 dakika eğimli yürüyüş yap.'}</p></div>`;
+    html += `<div class="card" style="margin-top:12px"><h3>${mw && !pickedWorkout ? 'Bugün kaçırdığın antrenmanı yap' : 'Önizleme: ' + esc(W.day) + ' antrenmanı'}</h3><p class="muted small" style="margin-top:4px">${mw && !pickedWorkout ? 'Dünkü ' + WORKOUTS[mw].name + ' yapılmadı. Bugün onu yap, kayıt bugüne yazılır.' : 'Bugün ' + DAYNAMES[dow] + ', dinlenme günün. Bu antrenmanı bugün yaparsan bugüne kaydedilir.'}</p>
+      ${pickedWorkout ? '<button type="button" class="link" data-act="unpick" style="margin-top:8px">← Bugüne dön</button>' : ''}</div>`;
   }
   html += `<div class="wtabs">${Object.keys(WORKOUTS).map(x => `<button type="button" class="${x===wkey?'on':''}" data-pick="${x}">${WORKOUTS[x].name}<small>${WORKOUTS[x].day}</small></button>`).join('')}</div>`;
   html += `<h2>${esc(W.name)} · ${esc(W.focus)}${isDeload(k)?' · hafif hafta':''}</h2><div class="stack">`;
@@ -2084,7 +2099,9 @@ document.addEventListener('click', e => {
   /* tapping the selected answer again clears it, as if it was never tapped */
   if (d.ans){ const [id,key,i] = d.ans.split('|'), l = dayLog(k); if (l.q[key] === +i) delete l.q[key]; else l.q[key] = +i; save(); render(); return; }
   if (d.water){ const l = dayLog(k); l.water = Math.min(6000, l.water + (+d.water)); if (l.water >= 1000) l.c.su = true; if (l.water >= 2000) l.c.su2 = true; save(); render(); return; }
-  if (d.pick){ pickedWorkout = d.pick; render(); return; }
+  if (d.pick){ pickedWorkout = d.pick; render(); window.scrollTo(0, 0); return; }
+  if (d.act === 'unpick'){ pickedWorkout = null; render(); window.scrollTo(0, 0); return; }
+  if (d.act === 'walkStart'){ if (state.sess) sessTap(); else sessAction('walk'); return; }
   if (d.set){
     const [wk, key, i, rest] = d.set.split('|'), l = dayLog(k), w = ensureWorkout(l, wk);
     const arr = w.ex[key] = w.ex[key] || [];
