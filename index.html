@@ -1555,12 +1555,18 @@ function renderWorkout(){
     view.innerHTML = html;
     return;
   }
-  if (!todays && !(l && l.w)){
-    const mw = missedWorkout();
-    html += `<div class="card" style="margin-top:12px"><h3>${mw && !pickedWorkout ? 'Bugün kaçırdığın antrenmanı yap' : 'Önizleme: ' + esc(W.day) + ' antrenmanı'}</h3><p class="muted small" style="margin-top:4px">${mw && !pickedWorkout ? 'Dünkü ' + WORKOUTS[mw].name + ' yapılmadı. Bugün onu yap, kayıt bugüne yazılır.' : 'Bugün ' + DAYNAMES[dow] + ', dinlenme günün. Bu antrenmanı bugün yaparsan bugüne kaydedilir.'}</p>
-      ${pickedWorkout ? '<button type="button" class="link" data-act="unpick" style="margin-top:8px">← Bugüne dön</button>' : ''}</div>`;
+  /* today's job: the workout already started today, else the scheduled one, else yesterday's missed one.
+     Any other workout is a read-only preview until the user chooses to do it today. */
+  const mw = missedWorkout(), todayJob = (l && l.w && l.w.key) || todays || mw || null, preview = wkey !== todayJob;
+  if (preview){
+    const started = l && l.w && l.w.ex && Object.keys(l.w.ex).length;
+    html += `<div class="card" style="margin-top:12px"><span class="pill p-blue">Önizleme</span><h3 style="margin-top:8px">${esc(W.day)} · ${esc(W.name)} antrenmanı</h3>
+      <p class="muted small" style="margin-top:4px">Bugün ${DAYNAMES[dow]}${todayJob ? ', bugünkü antrenmanın ' + esc(WORKOUTS[todayJob].name) : ', dinlenme günün'}. Burada sadece hareketlere ve ağırlıklara bakıyorsun, kayıt girilmez.</p>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn" data-act="unpick">← Bugüne dön</button>${started ? '' : `<button type="button" class="btn primary" data-act="doToday">Bunu bugün yap</button>`}</div></div>`;
+  } else if (!todays && mw === wkey && !(l && l.w)){
+    html += `<div class="card" style="margin-top:12px"><h3>Bugün kaçırdığın antrenmanı yap</h3><p class="muted small" style="margin-top:4px">Dünkü ${WORKOUTS[mw].name} yapılmadı. Bugün onu yap, kayıt bugüne yazılır.</p></div>`;
   }
-  html += `<div class="wtabs">${Object.keys(WORKOUTS).map(x => `<button type="button" class="${x===wkey?'on':''}" data-pick="${x}">${WORKOUTS[x].name}<small>${WORKOUTS[x].day}</small></button>`).join('')}</div>`;
+  html += `<div class="wtabs">${Object.keys(WORKOUTS).map(x => `<button type="button" class="${x===wkey?'on':''}" data-pick="${x}">${WORKOUTS[x].name}<small>${x === todayJob ? 'Bugün' : WORKOUTS[x].day}</small></button>`).join('')}</div>`;
   html += `<h2>${esc(W.name)} · ${esc(W.focus)}${isDeload(k)?' · hafif hafta':''}</h2><div class="stack">`;
   const wl = l && l.w && l.w.key === wkey ? l.w : null;
   W.ex.forEach((raw, idx) => {
@@ -1570,12 +1576,13 @@ function renderWorkout(){
     const unit = e.type === 'sec' ? 'sn' : 'tekrar';
     const big = (rec.kg === 0 ? 'ağırlıksız × ' : rec.kg !== null ? fmt(rec.kg)+' kg'+(e.dumb?' (tek el)':'')+' × ' : '') + rec.reps + ' ' + unit;
     const warm = idx === 0 || e.bar ? warmupText(key, rec.kg) : '';
-    html += `<div class="ex${okCount>=nSets?' complete':''}"><div class="ex-head"><h3>${idx+1}. ${esc(e.n)}${e.side?' <span class="muted small" style="font-weight:500">(her bacak)</span>':''}</h3><span class="num">${okCount}/${nSets} set</span></div>
+    html += `<div class="ex${okCount>=nSets?' complete':''}"><div class="ex-head"><h3>${idx+1}. ${esc(e.n)}${e.side?' <span class="muted small" style="font-weight:500">(her bacak)</span>':''}</h3><span class="num">${preview ? nSets : okCount + '/' + nSets} set</span></div>
       ${figHTML(key)}
       <div class="target${rec.cal?' calib':''}${rec.goal?' goaled':''}">${rec.cal ? '<span class="pill p-yellow" style="margin-bottom:6px">Ayar seti</span>' : rec.goal ? '<span class="pill p-green" style="margin-bottom:6px">Hedefte · bakım</span>' : ''}<div class="big">${nSets} set · ${big}</div><p>${esc(rec.why)}</p><p class="muted">Setler arası ${Math.floor(e.rest/60)}${e.rest%60?':'+pad(e.rest%60):''} dk dinlen.</p>${goalBarHTML(key, k)}</div>
       ${warm ? `<p class="warm"><b>${esc(warm)}</b></p>` : ''}
       <details class="how"><summary>Nasıl yapılır?</summary><p>${esc(e.cue)}</p><a class="link" href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.n+' nasıl yapılır')}" target="_blank" rel="noopener">Videosunu izle →</a></details>
       <div class="sets">`;
+    if (preview){ html += `</div></div>`; return; }
     for (let i=0;i<nSets;i++){
       const s = logged[i] || {};
       const prevKg = (() => { for (let j=i-1;j>=0;j--) if (logged[j] && logged[j].ok && logged[j].kg !== undefined) return logged[j].kg; return null; })();
@@ -1597,7 +1604,8 @@ function renderWorkout(){
   });
   html += `</div>`;
   const done = wl && wl.done;
-  if (done){
+  if (preview){ html += `<button type="button" class="btn full" data-act="unpick" style="margin-top:14px;min-height:50px">← Bugüne dön</button>`; }
+  else if (done){
     html += `<div class="card" style="margin-top:14px"><h3>Antrenman tamamlandı ✓</h3><p class="muted small" style="margin-top:4px">Nasıl geçti?</p><div class="opts" style="margin-top:8px">${['Kolaydı','İyiydi','Çok zordu'].map((o,i) => `<button type="button" class="opt${wl.rpe===i?' on':''}" data-rpe="${i}">${o}</button>`).join('')}</div>
       <p class="muted small" style="margin-top:10px">Şimdi 1 saat içinde akşam yemeğini ye. Proteini atlama.</p><button type="button" class="link" data-act="unfinish" style="margin-top:8px">Bitirmeyi geri al</button></div>`;
   } else html += `<button type="button" class="btn primary full" data-act="finish" style="margin-top:14px;min-height:50px">Antrenmanı bitir</button>`;
@@ -2032,7 +2040,8 @@ function checkAlerts(hm){
 /* =========================================================
    EVENTS
    ========================================================= */
-function go(t){ tab = t; lsSet('cepkocum-tab', tab); window.scrollTo(0,0); render(); }
+/* leaving a tab closes any preview there, so coming back always shows today */
+function go(t){ if (t !== tab){ pickedWorkout = null; photoDay = null; } tab = t; lsSet('cepkocum-tab', tab); window.scrollTo(0,0); render(); }
 /* header stopwatch: start and finish with a confirmation. The start is a timestamp, so it keeps counting
    with the screen off or the app closed; finishing records the minutes and ticks the workout or the walk. */
 const fmtDur = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60); return h ? h+':'+pad(m)+':'+pad(s%60) : pad(m)+':'+pad(s%60); };
@@ -2101,6 +2110,7 @@ document.addEventListener('click', e => {
   if (d.water){ const l = dayLog(k); l.water = Math.min(6000, l.water + (+d.water)); if (l.water >= 1000) l.c.su = true; if (l.water >= 2000) l.c.su2 = true; save(); render(); return; }
   if (d.pick){ pickedWorkout = d.pick; render(); window.scrollTo(0, 0); return; }
   if (d.act === 'unpick'){ pickedWorkout = null; render(); window.scrollTo(0, 0); return; }
+  if (d.act === 'doToday'){ const l = dayLog(k), wk = currentWorkoutKey(); if (!(l.w && l.w.ex && Object.keys(l.w.ex).length)){ ensureWorkout(l, wk); save(); toast(WORKOUTS[wk].name + ' bugünün antrenmanı oldu'); } render(); window.scrollTo(0, 0); return; }
   if (d.act === 'walkStart'){ if (state.sess) sessTap(); else sessAction('walk'); return; }
   if (d.set){
     const [wk, key, i, rest] = d.set.split('|'), l = dayLog(k), w = ensureWorkout(l, wk);
