@@ -158,6 +158,21 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .cmp img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;max-width:100%}
 .cmp figcaption{font-size:12px;font-weight:700;padding:6px 8px;color:var(--muted)}
 .thumbs{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
+.pdays{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.pdays::-webkit-scrollbar{display:none}
+.pday{flex:0 0 auto;min-width:58px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:7px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.pday b{font-family:var(--display);font-size:22px;font-weight:600}
+.pday span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.pday small{font-size:10.5px;color:var(--muted);margin-top:2px}
+.pday.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.pday.on small{color:inherit;opacity:.75}
+.pdaybox{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:10px}
+.pgrid figure{margin:0;min-width:0}
+.pimg{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
+.pimg img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block}
+.pgrid figcaption{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;margin-top:4px}
+.pgrid .thx{position:static;width:22px;height:22px}
 .th{position:relative;flex:0 0 56px}
 .th img{width:56px;height:74px;object-fit:cover;border-radius:8px;display:block}
 .th span{display:block;font-size:11px;color:var(--muted);text-align:center}
@@ -198,6 +213,10 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .cal .cd.today{background:var(--surface);color:var(--fg)}
 .cal .cd.future,.cal .cd.none{background:transparent;color:var(--muted);opacity:.6}
 .cal .cd.is-today{outline:2px solid var(--fg);outline-offset:-2px}
+.cal .cd.pre{background:transparent}
+.calleg{margin-top:10px}
+.calleg b{color:var(--fg);margin-left:2px}
+.card.due{border:2px solid var(--blue)}
 @media (max-width:340px){.jfig{width:66px;height:110px}.jbig{font-size:32px}}
 .phase .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:10px}
 .phase .steps span{font-size:11px;font-weight:700;text-align:center;padding:6px 2px;border-radius:8px;background:var(--surface-2);color:var(--muted);line-height:1.25}
@@ -241,9 +260,11 @@ ul.clean,ol.clean{margin:0;padding-left:20px} ul.clean li,ol.clean li{margin:5px
 .meal:first-child{border-top:0}
 .meal .t{font-family:var(--display);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums}
 .meal p{font-size:13px;color:var(--muted);margin-top:2px}
-.supp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.supp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.supp h3{flex:1 1 9em;min-width:0}
+.supp .pill{flex:0 1 auto;white-space:normal;max-width:100%}
 .supp:first-child{border-top:0}
-.supp p{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.supp p{flex-basis:100%;font-size:13px;color:var(--muted)}
 .shop label{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14px}
 .shop label:first-child{border-top:0}
 .shop input{width:20px;height:20px;accent-color:var(--green);flex:0 0 auto}
@@ -272,9 +293,13 @@ a.btn.primary{color:var(--bg)}
 .chathead b{font-size:15px}
 .chathead span{flex:1;min-width:0}
 .chats .chat{max-height:52vh;min-height:140px;overflow-y:auto;padding:12px}
-.chats .chips{padding:0 12px;margin-top:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
-.chats .chips::-webkit-scrollbar{display:none}
-.chats .chip{white-space:nowrap;flex:0 0 auto}
+.chatempty{padding:16px 14px 10px;text-align:center}
+.chatempty p + p{margin-top:4px}
+.sugg{display:grid;gap:6px;padding:0 12px}
+.sugg button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:12px;padding:10px 12px;font:600 14px/1.3 var(--body);cursor:pointer}
+.sugg button span{min-width:0;overflow-wrap:anywhere}
+.sugg button i{font-style:normal;color:var(--muted);font-size:18px;line-height:1;flex:0 0 auto}
+.sugg button:active{transform:scale(.99)}
 .chatbar{align-items:flex-end;gap:6px;padding:10px 12px 12px;margin-top:8px}
 .chatbar textarea{height:auto;min-height:44px;max-height:120px;border-radius:22px;padding:11px 14px;min-width:0}
 .chats #chatErr{padding:0 12px 10px}
@@ -287,7 +312,9 @@ a.btn.primary{color:var(--bg)}
 .chathead .iconbtn{width:36px;height:36px}
 .iconbtn.mic.rec{background:var(--red);border-color:var(--red);color:#fff;animation:micpulse 1.2s ease-in-out infinite}
 @keyframes micpulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--red) 25%,transparent)}}
-.memlist{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.learned{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface-2)}
+.learned ul{margin-top:6px}
+.memlist{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
 .memlist li{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px;font-size:14px}
 .memlist li span{min-width:0;overflow-wrap:anywhere}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
@@ -370,7 +397,7 @@ h3,p,li,.stat span,.note span{overflow-wrap:anywhere}
 .milestones{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
 .phase .steps{grid-template-columns:repeat(auto-fit,minmax(78px,1fr))}
 .phase .steps span,.milestones div,.wtabs button,.seg button,.opt,.chip,.btn,.pill{overflow-wrap:anywhere}
-.supp{grid-template-columns:minmax(0,1fr) minmax(0,auto)} .supp .pill{white-space:normal;text-align:right}
+
 .nextstop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin-top:4px}
 .jbig{line-height:1.12}
 .al-time{line-height:1.12}
@@ -398,7 +425,7 @@ h3,p,li,.stat span,.note span{overflow-wrap:anywhere}
   .target .big{font-size:19px}
   .meal{grid-template-columns:44px minmax(0,1fr)}
   .meal .t{font-size:14px}
-  .supp{grid-template-columns:minmax(0,1fr)} .supp .pill{justify-self:start;text-align:left}
+
   .wrow{flex-direction:column;align-items:flex-start}
   .rir{margin-left:0;padding:8px}
   .al-time{font-size:30px}
@@ -832,7 +859,7 @@ function dayPlan(k, raw){
   add({id:'isik', t:s.wake, cat:'sleep', title:'Kalk, 1 bardak su iç, gün ışığına çık', sub:'Erteleme tuşuna basma. 1 bardak su iç, perdeyi aç, 5–10 dakika balkonda veya cam önünde dur.'});
   add({id:'sabah', t:addMin(s.wake,5), cat:'track', type:'ask', title:'Sabah kontrolü', sub:'İki soruyu cevapla. Koçun programı buna göre ayarlar.',
     qs:[{key:'sleep', q:'Kaç saat uyudun?', opts:['5 veya az','6','7','8+']},{key:'energy', q:'Nasıl uyandın?', opts:['Yorgun','Normal','Dinç']}]});
-  if (dow === 1) add({id:'olcum', t:addMin(s.wake,10), cat:'track', title:'Kilo ve bel ölç', sub:'Tuvaletten sonra, bir şey yemeden. Beli göbek deliği hizasından, nefes verince ölç. İlerleme sekmesine yaz.', go:'progress'});
+  if (dow === 1) add({id:'olcum', t:addMin(s.wake,10), cat:'track', title:'Kilo ve bel ölç', sub:'Tuvaletten sonra, bir şey yemeden. Beli göbek deliği hizasından, nefes verince ölç. Aşağıdaki Ölçüm gir kutusuna yaz.', go:'meas'});
   if (dow === 1 && weekOf(k) % 2 === 1) add({id:'foto', t:addMin(s.wake,12), cat:'track', title:'Gelişim fotoğrafı çek', sub:'Ölçümden hemen sonra: ön, yan ve arka. Aynı yer, aynı ışık, şortla. İlerleme sekmesine ekle.', go:'progress'});
   add({id:'kahvalti', t:s.breakfast, cat:'supp', title:'Shake’ini iç: whey + muz + 5 g kreatin', sub:'Blendera 300 ml süt, 1 muz, 1 ölçek whey ve 5 g kreatin (1 silme çay kaşığı) koy, 30 saniye çek, iç.', p:35, kcal:400});
   add({id:'su', t:'10:30', cat:'supp', title:'1. litre suyu bitir', sub:'Masanda 1 litrelik şişe dursun. Bitince doldur.'});
@@ -1082,7 +1109,7 @@ const PDB = {
   put(p){ return this.tx('readwrite', s => s.put(p)); },
   del(id){ return this.tx('readwrite', s => s.delete(id)); }
 };
-let photoPose = 'on', photoDel = null, photoUrls = [];
+let photoPose = 'on', photoDel = null, photoUrls = [], photoDay = null;
 function compressImage(file){
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), img = new Image();
@@ -1105,7 +1132,20 @@ async function renderPhotos(){
   const url = b => { const u = URL.createObjectURL(b); photoUrls.push(u); return u; };
   const list = all.filter(p => p.pose === photoPose).sort((a,b) => a.d.localeCompare(b.d) || String(a.id).localeCompare(String(b.id)));
   const counts = Object.keys(POSES).map(p => all.filter(x => x.pose === p).length);
-  let h = `<div class="wtabs" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:0">${Object.keys(POSES).map((p,i) => `<button type="button" class="${p===photoPose?'on':''}" data-pose="${p}">${POSES[p]}<small>${counts[i]} foto</small></button>`).join('')}</div>`;
+  /* photo calendar: every day that has photos; tapping a day opens all photos taken that day */
+  const days = [...new Set(all.map(p => p.d))].sort().reverse();
+  if (photoDay && !days.includes(photoDay)) photoDay = null;
+  let h = '';
+  if (days.length){
+    h += `<div class="pdays" role="list">${days.map(d => { const dt = parseKey(d), n = all.filter(p => p.d === d).length;
+      return `<button type="button" role="listitem" class="pday${d === photoDay ? ' on' : ''}" data-pday="${d}" aria-pressed="${d === photoDay}"><b>${dt.getDate()}</b><span>${MONTHS[dt.getMonth()].slice(0,3)}</span><small>${n} foto</small></button>`; }).join('')}</div>`;
+    if (photoDay){
+      const dt = parseKey(photoDay), dayList = all.filter(p => p.d === photoDay).sort((a,b) => Object.keys(POSES).indexOf(a.pose) - Object.keys(POSES).indexOf(b.pose) || String(a.id).localeCompare(String(b.id)));
+      h += `<div class="pdaybox"><div class="row" style="justify-content:space-between;align-items:baseline"><h3>${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()} · ${DAYNAMES[dt.getDay()]}</h3><span class="muted small">${daysBetween(state.start, photoDay) + 1}. gün</span></div>
+        <div class="pgrid">${dayList.map(p => `<figure><button type="button" class="pimg" data-pview="${POSES[p.pose]} · ${dShort(p.d)}"><img src="${url(p.blob)}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}"></button><figcaption>${POSES[p.pose]}<button type="button" class="thx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button></figcaption></figure>`).join('')}</div></div>`;
+    }
+  }
+  h += `<div class="wtabs" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:${days.length ? 14 : 0}px">${Object.keys(POSES).map((p,i) => `<button type="button" class="${p===photoPose?'on':''}" data-pose="${p}">${POSES[p]}<small>${counts[i]} foto</small></button>`).join('')}</div>`;
   h += `<p class="muted small" style="margin-top:10px">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Telefonu göğüs hizasında tut, kollar yanda, karnını içine çekme.</p>`;
   h += `<label class="btn primary full" style="display:flex;justify-content:center;align-items:center;margin-top:10px;cursor:pointer">${POSES[photoPose]} fotoğrafı ekle<input type="file" accept="image/*" id="photoIn" hidden></label>`;
   if (list.length){
@@ -1119,7 +1159,7 @@ async function renderPhotos(){
     h += `<div class="thumbs">${list.map(p => `<div class="th"><img src="${url(p.blob)}" alt="${dShort(p.d)}"><span>${dShort(p.d).slice(0,5)}</span><button type="button" class="thx" data-pdel="${p.id}" aria-label="${dShort(p.d)} fotoğrafını sil">×</button></div>`).join('')}</div>`;
     if (photoDel) h += `<div class="confirm">Bu fotoğraf kalıcı olarak silinecek. Emin misin?<div class="row" style="margin-top:8px"><button type="button" class="btn" data-act="pdelYes" style="background:var(--red);color:var(--on-accent);border-color:var(--red)">Sil</button><button type="button" class="btn" data-act="pdelNo">Vazgeç</button></div></div>`;
   }
-  h += `<p class="muted small" style="margin-top:10px">Fotoğraflar sadece bu cihazda saklanır, hiçbir yere yüklenmez.</p>`;
+  h += `<p class="muted small" style="margin-top:10px">Fotoğraflar sadece bu cihazda saklanır. Yalnızca “Koçum incelesin” dediğinde Claude’a gönderilir.</p>`;
   box.innerHTML = h;
 }
 async function addPhoto(file){
@@ -1321,8 +1361,14 @@ function calendarHTML(){
   while (d <= end){ cells.push(d); d = addDays(d, 1); }
   const lastWeeks = cells.slice(-42);
   const NAME = {full:'tamamlandı', partial:'yarım kaldı', missed:'kaçırıldı', today:'bugün', future:'', none:''};
-  return `<div class="card"><div class="cal">${MON.map(m => `<span class="ch">${m}</span>`).join('')}${lastWeeks.map(x => { const st = dayStatus(x); return `<span class="cd ${st}${x === t ? ' is-today' : ''}" title="${dShort(x)} ${NAME[st]}">${parseKey(x).getDate()}</span>`; }).join('')}</div>
-    <div class="legend" style="margin-top:10px"><span><i style="background:var(--green)"></i>Tamamlandı, sayıldı</span><span><i style="background:var(--yellow)"></i>Yarım, sayılmadı</span><span><i style="background:var(--red)"></i>Kaçırıldı</span></div></div>`;
+  /* days before the program started stay blank; the legend counts each colour so it always says something */
+  const cnt = {full:0, partial:0, missed:0};
+  for (let x = state.start; x < t; x = addDays(x, 1)){ const st = dayStatus(x); if (cnt[st] !== undefined) cnt[st]++; }
+  if (dayStatus(t) === 'full') cnt.full++;
+  const tp = Math.round(todayRatio() * 100);
+  return `<div class="card"><div class="cal">${MON.map(m => `<span class="ch">${m}</span>`).join('')}${lastWeeks.map(x => { if (x < state.start) return '<span class="cd pre" aria-hidden="true"></span>'; const st = dayStatus(x); return `<span class="cd ${st}${x === t ? ' is-today' : ''}" title="${dShort(x)} ${NAME[st]}">${parseKey(x).getDate()}</span>`; }).join('')}</div>
+    <div class="legend calleg"><span><i style="background:var(--green)"></i>Sayılan <b>${cnt.full}</b></span><span><i style="background:var(--yellow)"></i>Yarım <b>${cnt.partial}</b></span><span><i style="background:var(--red)"></i>Kaçan <b>${cnt.missed}</b></span></div>
+    <p class="muted small" style="margin-top:6px">Bugün %${tp}. Görevlerin %90’ını ve ana görevleri bitirince bugünün kutusu <b style="color:var(--green)">yeşil</b> olur ve hedefe 1 gün eklenir. Yarım kalan gün sarı, hiç girilmeyen gün kırmızı olur ve sayılmaz.</p></div>`;
 }
 function phaseCardHTML(){
   const p = phaseInfo(), b = lastWaist(), left = Math.max(0, b - PROFILE.hedefBel), rate = weeklyWaistRate();
@@ -1422,7 +1468,7 @@ function renderToday(){
     <div class="stat"><span>Protein</span><b>${t.p}<small> / ${PROFILE.protein} g</small></b><div class="bar"><i style="width:${pP*100}%;background:var(--yellow)"></i></div></div>
     <div class="stat"><span>Su</span><b>${fmt(t.water/1000)}<small> / 3 L</small></b><div class="bar"><i style="width:${pW*100}%;background:var(--blue)"></i></div><button type="button" class="mini" data-water="250">+1 bardak</button></div>
     <div class="stat"><span>Görev</span><b>${t.done}<small> / ${t.total}</small></b><div class="bar"><i style="width:${pD*100}%;background:var(--green)"></i></div></div></div>`;
-  html += journeyHTML(true);
+  html += measureCardHTML();
   const notes = coachNotes(k);
   if (notes.length) html += `<div class="notes">${notes.map(([c,txt]) => `<div class="note"><i style="background:var(--${c})"></i><span>${esc(txt)}</span></div>`).join('')}</div>`;
 
@@ -1597,17 +1643,23 @@ function lineChart(points, field, goal, unit, color){
   if (points.length > 1) g += `<text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--muted)">${dd(lp.d)}</text>`;
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${field} grafiği">${g}</svg>`;
 }
-function renderProgress(){
-  const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), first = m[0], last = m[m.length-1], k = todayKey();
-  let html = `<h2>Ölçüm gir</h2><div class="card"><div class="row" style="align-items:flex-end">
+/* weight + waist entry; lives on the Today tab (the Monday measurement is a daily task there) */
+function measureCardHTML(){
+  const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), last = m[m.length-1], k = todayKey();
+  const monday = parseKey(k).getDay() === 1, doneToday = m.some(x => x.d === k);
+  return `<h2>Ölçüm gir</h2><div class="card${monday && !doneToday ? ' due' : ''}" id="measCard"><div class="row" style="align-items:flex-end">
     <label class="f">Tarih<input type="date" id="mDate" value="${k}" max="${k}"></label>
     <label class="f">Kilo (kg)<input type="text" inputmode="decimal" id="mKg" placeholder="${fmt(last.kg)}" style="width:92px"></label>
     <label class="f">Bel (cm)<input type="text" inputmode="decimal" id="mBel" placeholder="${fmt(last.bel)}" style="width:92px"></label>
     <button type="button" class="btn primary" data-act="measure">Kaydet</button></div>
-    <p class="muted small" style="margin-top:8px">Her pazartesi sabah, tuvaletten sonra ve aç karnına ölç. Beli göbek deliği hizasından, nefes verince ölç.</p>
+    <p class="muted small" style="margin-top:8px">${doneToday ? 'Bugünkü ölçümün kaydedildi ✓ ' : monday ? 'Bugün ölçüm günü. ' : ''}Her pazartesi sabah, tuvaletten sonra ve aç karnına ölç. Beli göbek deliği hizasından, nefes verince ölç. Son ölçüm: ${dShort(last.d)} · ${fmt(last.kg)} kg · bel ${fmt(last.bel)} cm.</p>
     <p id="mErr" class="small" style="color:var(--red);margin-top:6px" hidden></p></div>`;
+}
+function renderProgress(){
+  const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), first = m[0], last = m[m.length-1], k = todayKey();
+  let html = '';
   const bd = last.bel - first.bel, kd = last.kg - first.kg, sign = v => (v > 0 ? '+' : '') + fmt(Math.round(v*10)/10);
-  html += `<h2>Durum</h2><div class="stats" style="margin-top:0">
+  html += `<h2 style="margin-top:4px">Durum</h2><div class="stats" style="margin-top:0">
     <div class="stat"><span>Bel</span><b>${fmt(last.bel)}<small> cm</small></b><span>başlangıçtan ${sign(bd)}</span></div>
     <div class="stat"><span>Kilo</span><b>${fmt(last.kg)}<small> kg</small></b><span>başlangıçtan ${sign(kd)}</span></div>
     <div class="stat"><span>Hedefe</span><b>${fmt(Math.max(0, Math.round((last.bel-PROFILE.hedefBel)*10)/10))}<small> cm</small></b><span>bel kaldı</span></div></div>`;
@@ -1615,7 +1667,7 @@ function renderProgress(){
   html += `<h2>Hedef takvimi</h2>` + journeyHTML(false).replace('card journey', 'card journey" style="margin-top:0')
     + `<div class="milestones">${MILESTONES.map(m => `<div class="${cd >= m.d ? 'got' : ''}"><b>${m.d}. gün</b>${esc(m.name)}<br><span class="muted">${esc(m.what)}</span></div>`).join('')}</div>`
     + `<div style="margin-top:10px"></div>` + calendarHTML()
-    + `<p class="muted small" style="margin-top:8px">Sadece tamamladığın günler sayılır. Uygulamaya girmediğin veya görevleri yapmadığın günler hedeften düşmez, takvim kendiliğinden ilerlemez.</p>`;
+;
   html += phaseCardHTML();
   html += `<h2>Gelişim fotoğrafları</h2><div class="card" id="photoBox"><p class="muted small">Yükleniyor…</p></div>`;
   html += `<h2>Bel çevresi</h2><div class="card">${lineChart(m,'bel',PROFILE.hedefBel,'cm','var(--red)')}</div>`;
@@ -1642,7 +1694,7 @@ function renderProgress(){
 /* coach: answers on the user's own Claude plan (in claude.ai or the Claude app), never on paid API credits.
    Its memory is everything this app records (summarised in contextText) plus the notes in state.mem. */
 let chatBusy = false, chatCtl = null, memDraft = '';
-const COACH_QS = ['Bugün ne yapacağım?','Dışarıda yemek yiyeceğim, ne yiyeyim?','Bu hafta nasıl gidiyorum?','Squat yaparken dizim ağrıyor','Antrenmanı kaçırdım, ne yapayım?','Tahlil sonuçlarımı yazacağım'];
+const COACH_QS = ['Bugün ne yapacağım?','Bu hafta nasıl gidiyorum?','Dışarıda yiyeceğim, ne seçeyim?','Antrenmanı kaçırdım, ne yapayım?'];
 const QN = {sleep:SLEEP_H.map(h => h+' sa'), energy:['yorgun','normal','dinç'], sore:['yok','hafif','çok'], offplan:['hayır','biraz','çok'], steps:['az','orta','çok']};
 const MEM_RE = /\[\[HAFIZA:\s*([^\]]+?)\s*\]\]/g;
 function addMemory(t, by){
@@ -1651,11 +1703,42 @@ function addMemory(t, by){
   state.mem.push({d:todayKey(), t, by});
   if (state.mem.length > 40) state.mem = state.mem.slice(-40);
 }
+/* what the coach has learned from the user's own entries, recomputed from the records every time:
+   the more the user logs, the more specific these get */
+function learned(){
+  const k = todayKey(), out = [], days = [];
+  for (let i = 1; i <= 28; i++){ const d = addDays(k, -i); if (d < state.start) break; days.push(d); }
+  if (!days.length) return out;
+  const logs = days.map(d => [d, peekLog(d)]).filter(([, l]) => l);
+  const sl = logs.filter(([, l]) => l.q && l.q.sleep !== undefined).map(([, l]) => SLEEP_H[l.q.sleep]);
+  if (sl.length >= 3){ const a = sl.reduce((x, y) => x + y, 0) / sl.length; out.push('Ortalama uykun ' + fmt(Math.round(a * 10) / 10) + ' saat' + (a < 7 ? ', hedefin (8 saat) altında. Yağ yakımını ve toparlanmayı yavaşlatıyor.' : '.')); }
+  const tired = logs.filter(([, l]) => l.q && l.q.energy === 0).length;
+  if (tired >= 3) out.push('Son 4 haftada ' + tired + ' sabah yorgun uyandın.');
+  const pr = days.map(d => dayTotals(d).p).filter(p => p > 0);
+  if (pr.length >= 3){ const a = Math.round(pr.reduce((x, y) => x + y, 0) / pr.length); out.push('Günlük protein ortalaman ~' + a + ' g' + (a < PROTEIN_OK ? ' (hedef ' + PROFILE.protein + ' g, eksik kalıyor).' : ', hedefte.')); }
+  const missed = {}; days.forEach(d => { const dow = parseKey(d).getDay(), l = peekLog(d); if (SCHEDULE[dow] && !(l && l.w && l.w.done)) missed[dow] = (missed[dow] || 0) + 1; });
+  const worst = Object.entries(missed).sort((a, b) => b[1] - a[1])[0];
+  if (worst && worst[1] >= 2) out.push(DAYNAMES[worst[0]] + ' antrenmanlarını ' + worst[1] + ' kez kaçırdın.');
+  const walks = days.filter(d => !SCHEDULE[parseKey(d).getDay()]), walked = walks.filter(d => { const l = peekLog(d); return l && l.c && l.c.yuruyus; }).length;
+  if (walks.length >= 3) out.push('Dinlenme günü yürüyüşlerinin ' + walked + '/' + walks.length + ' tanesini yaptın.');
+  const off = logs.filter(([, l]) => l.q && l.q.offplan === 2).length;
+  if (off >= 2) out.push(off + ' gün plan dışı çok yedin.');
+  const sore = logs.filter(([, l]) => l.q && l.q.sore === 2).length;
+  if (sore >= 2) out.push(sore + ' antrenman öncesi çok kas ağrısı bildirdin.');
+  const mins = logs.map(([, l]) => l.w && l.w.min).filter(Boolean);
+  if (mins.length >= 2) out.push('Antrenmanların ortalama ' + Math.round(mins.reduce((x, y) => x + y, 0) / mins.length) + ' dakika sürüyor.');
+  const m = state.measurements.slice().sort((a, b) => a.d.localeCompare(b.d));
+  if (m.length >= 2){ const r = weeklyWaistRate(); if (r !== null) out.push('Belin haftada ortalama ' + fmt(Math.round(r * 10) / 10) + ' cm ' + (r >= 0 ? 'inceliyor.' : 'kalınlaşıyor.')); }
+  return out;
+}
 function memoryCardHTML(){
-  const list = state.mem.map((m,i) => `<li><span><b class="muted small">${esc(m.d.split('-').reverse().slice(0,2).join('.'))}${m.by === 'koç' ? ' · koç' : ''}</b> ${esc(m.t)}</span><button type="button" class="link" data-delmem="${i}">Sil</button></li>`).join('');
+  const lr = learned();
+  const learnedHTML = `<div class="learned"><p class="small" style="font-weight:700">Senin hakkında öğrendikleri</p>${lr.length ? `<ul class="clean small">${lr.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : `<p class="muted small">Birkaç gün kayıt girdikten sonra burada uykun, proteinin, kaçırdığın günler ve gelişimin hakkında öğrendikleri görünür.</p>`}</div>`;
+  const list =state.mem.map((m,i) => `<li><span><b class="muted small">${esc(m.d.split('-').reverse().slice(0,2).join('.'))}${m.by === 'koç' ? ' · koç' : ''}</b> ${esc(m.t)}</span><button type="button" class="link" data-delmem="${i}">Sil</button></li>`).join('');
   return `<h2>Koçunun hafızası</h2><div class="card">
     <p class="muted small">Koçun bu uygulamaya girdiğin her şeyi bilir: bütün antrenmanların ve ağırlıkların, öğünlerin, suyun, uykun, ölçümlerin, sabah ve akşam cevapların. Bunlara ek olarak bilmesi gerekenleri buraya yaz: ağrı, sevmediğin yemek, değişen iş saati.${sample ? ' Sohbette öğrendiği önemli şeyleri de kendisi ekler.' : ''}</p>
-    ${list ? `<ul class="memlist">${list}</ul>` : ''}
+    ${learnedHTML}
+    ${list ? `<p class="small" style="font-weight:700;margin-top:12px">Notların</p><ul class="memlist">${list}</ul>` : ''}
     <form class="composer" id="memForm"><input id="memIn" type="text" placeholder="Örn: Sol dizim squatta ağrıyor" aria-label="Hafızaya not" value="${esc(memDraft)}"><button type="submit" class="btn">Ekle</button></form></div>`;
 }
 /* the coach chat lives in the claude.ai version (it runs on the user's Claude Pro plan, no API credits);
@@ -1690,8 +1773,10 @@ function renderCoach(){
     html += `<p class="small sync" style="margin:-4px 0 10px">${esc(syncText())}${needAsk ? ' <button type="button" class="link" data-act="phoneAllow">İzin ver</button>' : ''}</p>`;
     html += `<div class="chats card">
       <div class="chathead"><b>Koç</b><span class="muted small">${voiceOn ? 'Sesli cevap açık' : 'Sesli cevap kapalı'}</span><button type="button" class="iconbtn${voiceOn ? ' on' : ''}" data-act="voiceToggle" aria-label="${voiceOn ? 'Sesli cevabı kapat' : 'Sesli cevabı aç'}">${voiceOn ? IC.spk : IC.mute}</button></div>
-      <div class="chat" id="chat">${state.chat.length ? state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('') : `<p class="muted small" style="text-align:center;padding:18px 6px">Koçun bütün kayıtlarını ve hafızasını biliyor. Yaz ya da mikrofona basıp konuş.</p>`}</div>
-      <div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+      ${state.chat.length
+        ? `<div class="chat" id="chat">${state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('')}</div>`
+        : `<div class="chatempty"><p><b>Koçuna sor</b></p><p class="muted small">Bütün kayıtlarını ve hafızasını biliyor. Yaz ya da mikrofona basıp konuş.</p></div>
+           <div class="sugg">${COACH_QS.slice(0, 4).map(q => `<button type="button" data-ask="${esc(q)}"><span>${esc(q)}</span><i aria-hidden="true">›</i></button>`).join('')}</div>`}
       <form class="composer chatbar" id="composer"><textarea id="chatIn" rows="1" placeholder="Koçuna yaz…" aria-label="Mesaj"></textarea>
         <button type="button" class="iconbtn mic${listening ? ' rec' : ''}" data-act="mic" aria-label="${listening ? 'Dinlemeyi durdur' : 'Sesle konuş'}">${listening ? IC.stop : IC.mic}</button>
         <button type="submit" class="iconbtn send" aria-label="${chatBusy ? 'Durdur' : 'Gönder'}">${chatBusy ? IC.stop : IC.send}</button></form>
@@ -1782,6 +1867,7 @@ function contextText(recentDays){
    + 'BESLENME: günlük '+state.kcal+' kcal, '+PROFILE.protein+' g protein, 3 L su. Kahvaltı whey+süt+muz+5 g kreatin shake; hafta içi öğle 200 g tavuk + pilav kabı, hafta sonu ev yemeği; ara öğün 150 g süzme peynir; akşam ev yemeği; protein eksikse 21:00 whey. Zorunlu: kreatin 5 g, whey, magnezyum glisinat 200-350 mg yatmadan 45 dk önce.\n'
    + 'SAATLER: kalkış '+state.settings.wake+', kahvaltı '+state.settings.breakfast+', antrenman '+state.settings.workout+', yürüyüş '+state.settings.walk+', yatış '+state.settings.sleep+'.\n'
    + 'ÖLÇÜMLER: '+state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)).map(m => m.d+' '+fmt(m.kg)+' kg bel '+fmt(m.bel)+' cm').join('; ')+'\n'
+   + (learned().length ? 'KAYITLARDAN ÖĞRENDİKLERİN (bunları dikkate alarak yönlendir):\n'+learned().map(t => '- '+t).join('\n')+'\n' : '')
    + (state.mem.length ? 'KOÇUN HAFIZASI (kullanıcı hakkında bilmen gerekenler):\n'+state.mem.map(m => '- '+m.d+': '+m.t).join('\n')+'\n' : '')
    + 'HAREKETLERDEKİ GELİŞİM:\n'+exerciseHistory()+'\n'
    + 'HAFTALAR:\n'+weekSummaries()+'\n'
@@ -1986,6 +2072,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset, k = todayKey();
   if (d.tab) return go(d.tab);
+  if (d.go === 'meas'){ if (tab !== 'today') go('today'); const c = document.getElementById('measCard'); if (c){ c.scrollIntoView({block:'center', behavior:'smooth'}); setTimeout(() => { const i = document.getElementById('mKg'); if (i) i.focus(); }, 350); } return; }
   if (d.go) return go(d.go);
   if (d.check){ const l = dayLog(k), id = d.check; if (id === 'protein'){ l.c.protein = l.c.protein ? false : (proteinSoFar(k) < PROTEIN_OK ? 'whey' : true); } else l.c[id] = !l.c[id]; save(); render(); if (l.c[id]) toast('Aferin, işaretlendi'); return; }
   if (d.ans){ const [id,key,i] = d.ans.split('|'), l = dayLog(k); l.q[key] = +i; save(); render(); return; }
@@ -2008,6 +2095,8 @@ document.addEventListener('click', e => {
   if (d.themeSet){ setTheme(d.themeSet); return; }
   if (d.alarmSet){ lsSet('cepkocum-alarm', d.alarmSet); render(); if (d.alarmSet === 'on') beep(); toast('Alarm sesi ' + (d.alarmSet === 'on' ? 'açık' : 'kapalı')); return; }
   if (d.pose){ photoPose = d.pose; photoDel = null; renderPhotos(); return; }
+  if (d.pday){ photoDay = photoDay === d.pday ? null : d.pday; photoDel = null; renderPhotos(); return; }
+  if (d.pview){ const img = b.querySelector('img'); if (img) openSheet(`<img src="${img.src}" alt="" style="width:100%;max-height:70vh;object-fit:contain;border-radius:12px;display:block"><p class="muted small" style="margin-top:8px;text-align:center">${esc(d.pview)}</p><div class="row"><button type="button" class="btn" data-sess="cancel">Kapat</button></div>`); return; }
   if (d.pdel){ photoDel = d.pdel; renderPhotos(); return; }
   if (d.act === 'pdelNo'){ photoDel = null; renderPhotos(); return; }
   if (d.act === 'pdelYes'){ const id = photoDel; photoDel = null; PDB.del(id).then(renderPhotos).then(() => toast('Fotoğraf silindi')).catch(() => toast('Silinemedi')); return; }
