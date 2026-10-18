@@ -115,6 +115,8 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .chk{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center;color:transparent;font-size:18px;font-weight:700;padding:0}
 .chk.on{background:var(--green);border-color:var(--green);color:var(--on-accent)}
 .chk.ans{border-style:dashed}
+.chk.ans.on{border-style:solid}
+.qlab{margin-top:8px;font-weight:700;font-size:13px;color:var(--fg)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 
@@ -394,6 +396,8 @@ h3,p,li,.stat span,.note span{overflow-wrap:anywhere}
 }
 /* grids that wrap instead of squeezing, at every width */
 .stats{grid-template-columns:repeat(auto-fit,minmax(84px,1fr))}
+.stats.stats4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:560px){.stats.stats4{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .milestones{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
 .phase .steps{grid-template-columns:repeat(auto-fit,minmax(78px,1fr))}
 .phase .steps span,.milestones div,.wtabs button,.seg button,.opt,.chip,.btn,.pill{overflow-wrap:anywhere}
@@ -1464,7 +1468,9 @@ function renderToday(){
   const k = todayKey(), plan = dayPlan(k), t = dayTotals(k), now = nowHM();
   let html = heroHTML(k, plan) + pushCardHTML();
   const pP = Math.min(1, t.p/PROFILE.protein), pW = Math.min(1, t.water/PROFILE.su), pD = t.total ? t.done/t.total : 0;
-  html += `<div class="stats">
+  const pK = Math.min(1, t.kcal/state.kcal), overK = t.kcal > state.kcal + 100;
+  html += `<div class="stats stats4">
+    <div class="stat"><span>Kalori</span><b>${t.kcal}<small> / ${state.kcal}</small></b><div class="bar"><i style="width:${pK*100}%;background:${overK ? 'var(--red)' : 'var(--green)'}"></i></div>${overK ? '<span class="small" style="color:var(--red);font-weight:700">Hedef aşıldı</span>' : ''}</div>
     <div class="stat"><span>Protein</span><b>${t.p}<small> / ${PROFILE.protein} g</small></b><div class="bar"><i style="width:${pP*100}%;background:var(--yellow)"></i></div></div>
     <div class="stat"><span>Su</span><b>${fmt(t.water/1000)}<small> / 3 L</small></b><div class="bar"><i style="width:${pW*100}%;background:var(--blue)"></i></div><button type="button" class="mini" data-water="250">+1 bardak</button></div>
     <div class="stat"><span>Görev</span><b>${t.done}<small> / ${t.total}</small></b><div class="bar"><i style="width:${pD*100}%;background:var(--green)"></i></div></div></div>`;
@@ -1482,7 +1488,7 @@ function renderToday(){
     else right = `<button type="button" class="chk${done?' on':''}" data-check="${it.id}" aria-pressed="${done}" aria-label="${esc(it.title)}: yaptım">✓</button>`;
     html += `<div class="item${done?' done':''}${i===nowIdx?' now':''}"><div class="time">${it.t}<i style="background:${CAT[it.cat]}"></i></div><div class="body"><h3>${esc(it.title)} ${i===nowIdx?'<span class="pill p-red">şimdi</span>':''}${late?'<span class="pill p-gray">gecikti</span>':''}</h3>`
       + (done ? '' : `<p>${esc(it.sub)}</p>`)
-      + (it.type === 'ask' ? it.qs.map(q => `<p style="margin-top:8px;font-weight:700;color:var(--fg)">${esc(q.q)}</p>${optsHTML(k,it,q)}`).join('') : '')
+      + (it.type === 'ask' ? it.qs.map(q => `<div class="qlab">${esc(q.q)}</div>${optsHTML(k,it,q)}`).join('') : '')
       + `</div>${right}</div>`;
   });
   html += `</div><div class="legend"><span><i style="background:var(--yellow)"></i>Yemek</span><span><i style="background:var(--green)"></i>Takviye ve su</span><span><i style="background:var(--blue)"></i>Antrenman</span><span><i style="background:var(--muted)"></i>Uyku</span><span><i style="background:var(--red)"></i>Kontrol</span></div>`;
@@ -1646,7 +1652,7 @@ function lineChart(points, field, goal, unit, color){
 /* weight + waist entry; lives on the Today tab (the Monday measurement is a daily task there) */
 function measureCardHTML(){
   const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), last = m[m.length-1], k = todayKey();
-  const monday = parseKey(k).getDay() === 1, doneToday = m.some(x => x.d === k);
+  const monday = parseKey(k).getDay() === 1, tl = peekLog(k), doneToday = !!(tl && tl.c && tl.c.olcum);
   return `<h2>Ölçüm gir</h2><div class="card${monday && !doneToday ? ' due' : ''}" id="measCard"><div class="row" style="align-items:flex-end">
     <label class="f">Tarih<input type="date" id="mDate" value="${k}" max="${k}"></label>
     <label class="f">Kilo (kg)<input type="text" inputmode="decimal" id="mKg" placeholder="${fmt(last.kg)}" style="width:92px"></label>
@@ -2075,7 +2081,8 @@ document.addEventListener('click', e => {
   if (d.go === 'meas'){ if (tab !== 'today') go('today'); const c = document.getElementById('measCard'); if (c){ c.scrollIntoView({block:'center', behavior:'smooth'}); setTimeout(() => { const i = document.getElementById('mKg'); if (i) i.focus(); }, 350); } return; }
   if (d.go) return go(d.go);
   if (d.check){ const l = dayLog(k), id = d.check; if (id === 'protein'){ l.c.protein = l.c.protein ? false : (proteinSoFar(k) < PROTEIN_OK ? 'whey' : true); } else l.c[id] = !l.c[id]; save(); render(); if (l.c[id]) toast('Aferin, işaretlendi'); return; }
-  if (d.ans){ const [id,key,i] = d.ans.split('|'), l = dayLog(k); l.q[key] = +i; save(); render(); return; }
+  /* tapping the selected answer again clears it, as if it was never tapped */
+  if (d.ans){ const [id,key,i] = d.ans.split('|'), l = dayLog(k); if (l.q[key] === +i) delete l.q[key]; else l.q[key] = +i; save(); render(); return; }
   if (d.water){ const l = dayLog(k); l.water = Math.min(6000, l.water + (+d.water)); if (l.water >= 1000) l.c.su = true; if (l.water >= 2000) l.c.su2 = true; save(); render(); return; }
   if (d.pick){ pickedWorkout = d.pick; render(); return; }
   if (d.set){
