@@ -1185,30 +1185,20 @@ function compressImage(file){
   });
 }
 const dShort = d => d.split('-').reverse().join('.');
-/* progress photos. Adding: photos taken today go into the Ön / Yan / Arka slots as small squares, and
-   Kaydet stores them on today's date and empties the slots (one photo per pose per day). Viewing: pick a
-   date and that day's photos open in a window in front of the app; closing it leaves nothing on the page. */
+/* progress photos. The card holds only a date picker. Picking a date opens a window for that day with
+   one slot per pose (Ön / Yan / Arka): a saved photo shows in its slot (tap = full screen), an empty slot
+   has + to choose a photo, and Kaydet stores the chosen ones on that date. Past dates work the same way,
+   so a forgotten day can be filled in later. */
 let photoStage = [], photoSeq = 0, slotUrls = [];
 async function renderPhotos(){
   const box = document.getElementById('photoBox'); if (!box) return;
-  const seq = ++photoSeq; /* only the latest render writes, so overlapping renders never show stale slots */
+  const seq = ++photoSeq; /* only the latest render writes */
   let all;
   try { all = await PDB.all(); } catch(e){ box.innerHTML = '<p class="muted small">Bu tarayıcı fotoğraf saklamaya izin vermiyor. Uygulamayı telefona kurduğunda çalışır.</p>'; return; }
   if (seq !== photoSeq || !document.body.contains(box)) return;
   const k = todayKey(), days = [...new Set(all.map(p => p.d))].sort();
-  slotUrls.forEach(u => URL.revokeObjectURL(u)); slotUrls = [];
-  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Her gün için ön, yan ve arka olmak üzere 3 fotoğraf.</p>`;
-  /* one slot per pose: empty shows the pose name and +, a chosen photo fills the whole slot */
-  /* poses already saved today leave the add area; once all three are saved it disappears and only the date picker stays */
-  const openPoses = Object.keys(POSES).filter(p => !all.some(x => x.d === k && x.pose === p));
-  if (openPoses.length) h += `<p class="small" style="margin-top:12px;font-weight:700">Bugün ekle</p><div class="pslots">${openPoses.map(p => {
-    const st = photoStage.find(x => x.pose === p);
-    if (st) return `<div class="pslot filled"><img src="${st.url}" alt="${POSES[p]} (kaydedilmedi)"><button type="button" class="pdelx" data-unstage="${st.id}" aria-label="${POSES[p]} fotoğrafını çıkar">×</button></div>`;
-    return `<label class="pslot empty"><span>${POSES[p]}</span><b>+</b><input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden></label>`; }).join('')}</div>`;
-  else h += `<p class="small" style="margin-top:12px;color:var(--green);font-weight:700">Bugünün 3 fotoğrafı kaydedildi ✓ Görmek için aşağıdan tarihi seç.</p>`;
-  if (photoStage.length) h += `<button type="button" class="btn primary full" data-act="photoSave" style="margin-top:10px">Kaydet (${photoStage.length} fotoğraf)</button>`;
-  h += `<p class="small" style="margin-top:16px;font-weight:700">Fotoğraflarına bak</p>
-    <label class="f" style="margin-top:6px;display:block">Tarih seç<input type="date" id="photoDate" value="" max="${k}" style="width:100%;box-sizing:border-box"></label>
+  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Her gün için ön, yan ve arka olmak üzere 3 fotoğraf. Tarihi seç: o günün fotoğrafları açılır, eksikleri oradan eklersin. Unuttuğun geçmiş bir günü de seçip ekleyebilirsin.</p>
+    <label class="f" style="margin-top:10px;display:block">Tarih seç<input type="date" id="photoDate" value="" max="${k}" style="width:100%;box-sizing:border-box"></label>
     <p class="muted small" style="margin-top:6px">${days.length ? days.length + ' günde fotoğraf var: ' + days.slice(-6).reverse().map(dShort).join(', ') + (days.length > 6 ? '…' : '') : 'Henüz kayıtlı fotoğraf yok.'}</p>`;
   const pairs = Object.keys(POSES).filter(p => all.filter(x => x.pose === p).length >= 2);
   if (pairs.length) h += `<p class="small" style="margin-top:14px;font-weight:700">Koçum incelesin: değişim var mı?</p><div class="row" style="margin-top:6px">${pairs.map(p => `<button type="button" class="btn" data-photoai="${p}">${POSES[p]}</button>`).join('')}</div><div id="photoAI" class="small" style="white-space:pre-wrap;margin-top:8px"></div>`;
@@ -1216,39 +1206,52 @@ async function renderPhotos(){
   box.innerHTML = h;
 }
 async function stagePhoto(file, pose){
+  const d = photoOpen; if (!d) return;
   try {
-    const all = await PDB.all(), k = todayKey();
-    if (photoStage.some(x => x.pose === pose) || all.some(p => p.d === k && p.pose === pose)){ toast('Bugün için ' + POSES[pose] + ' fotoğrafı zaten var'); return; }
+    const all = await PDB.all();
+    if (photoStage.some(x => x.pose === pose) || all.some(p => p.d === d && p.pose === pose)){ toast('Bu tarih için ' + POSES[pose] + ' fotoğrafı zaten var'); return; }
     const blob = await compressImage(file);
     photoStage.push({id: Date.now() + '-' + Math.random().toString(36).slice(2,7), pose, blob, url: URL.createObjectURL(blob)});
   } catch(e){ toast(e && e.message ? e.message : 'Fotoğraf eklenemedi'); }
-  renderPhotos();
+  openPhotoDay(d);
 }
+function clearStage(){ photoStage.forEach(x => URL.revokeObjectURL(x.url)); photoStage = []; }
 async function saveStaged(){
-  const k = todayKey(), n = photoStage.length;
+  const d = photoOpen, n = photoStage.length; if (!d || !n) return;
   try {
-    for (const x of photoStage){ await PDB.put({id:x.id, d:k, pose:x.pose, blob:x.blob}); URL.revokeObjectURL(x.url); }
-    photoStage = [];
-    const l = dayLog(k); l.c.foto = true; save();
-    toast(n + ' fotoğraf ' + dShort(k) + ' tarihine kaydedildi');
+    for (const x of photoStage) await PDB.put({id:x.id, d, pose:x.pose, blob:x.blob});
+    clearStage();
+    if (d === todayKey()){ const l = dayLog(d); l.c.foto = true; save(); }
+    toast(n + ' fotoğraf ' + dShort(d) + ' tarihine kaydedildi');
   } catch(e){ toast('Kaydedilemedi'); }
-  renderPhotos();
+  renderPhotos(); openPhotoDay(d);
 }
-/* the day's photos in a window over the app */
+/* the day's window, in front of the app */
 async function openPhotoDay(d){
   let all; try { all = await PDB.all(); } catch(e){ return; }
+  if (photoOpen !== d) clearStage();
   photoUrls.forEach(u => URL.revokeObjectURL(u)); photoUrls = [];
   const url = b => { const u = URL.createObjectURL(b); photoUrls.push(u); return u; };
   const dt = parseKey(d), nDay = daysBetween(state.start, d) + 1;
-  const list = all.filter(p => p.d === d).sort((a,b) => Object.keys(POSES).indexOf(a.pose) - Object.keys(POSES).indexOf(b.pose) || String(a.id).localeCompare(String(b.id)));
-  let h = `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;margin-top:0"><div style="min-width:0"><h3>${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}</h3><p class="muted small">${DAYNAMES[dt.getDay()]}${nDay > 0 ? ' · ' + nDay + '. gün' : ''} · ${list.length} fotoğraf</p></div><button type="button" class="iconbtn" data-act="photoClose" aria-label="Kapat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
-  photoView = list.map(p => ({url: url(p.blob), label: POSES[p.pose] + ' · ' + dShort(p.d)}));
-  h += list.length
-    ? `<div class="pslots pview3">${list.map((p, i) => `<figure class="pslot filled"><button type="button" class="pimgbtn" data-pview="${i}" aria-label="${POSES[p.pose]} fotoğrafını büyüt"><img src="${photoView[i].url}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}"></button>${photoDel === p.id
-        ? `<div class="pdelask"><span>Silinsin mi?</span><button type="button" class="btn" data-act="pdelYes">Sil</button><button type="button" class="btn" data-act="pdelNo">Vazgeç</button></div>`
-        : `<button type="button" class="pdelx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button><span class="pposelbl">${POSES[p.pose]}</span>`}</figure>`).join('')}</div>`
-    : `<p class="muted small" style="margin-top:14px;text-align:center;padding:18px 0">Bu tarihte fotoğraf yok.</p>`;
-  h += `<button type="button" class="btn full" data-act="photoClose" style="margin-top:14px">Kapat</button>`;
+  const saved = all.filter(p => p.d === d).sort((a,b) => Object.keys(POSES).indexOf(a.pose) - Object.keys(POSES).indexOf(b.pose) || String(a.id).localeCompare(String(b.id)));
+  photoView = saved.map(p => ({id:p.id, url:url(p.blob), label:POSES[p.pose] + ' · ' + dShort(p.d)}));
+  const tile = (p, i) => `<figure class="pslot filled"><button type="button" class="pimgbtn" data-pview="${i}" aria-label="${POSES[p.pose]} fotoğrafını büyüt"><img src="${photoView[i].url}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}"></button>${photoDel === p.id
+    ? `<div class="pdelask"><span>Silinsin mi?</span><button type="button" class="btn" data-act="pdelYes">Sil</button><button type="button" class="btn" data-act="pdelNo">Vazgeç</button></div>`
+    : `<button type="button" class="pdelx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button><span class="pposelbl">${POSES[p.pose]}</span>`}</figure>`;
+  const used = new Set();
+  const slots = Object.keys(POSES).map(p => {
+    const si = saved.findIndex(x => x.pose === p);
+    if (si >= 0){ used.add(si); return tile(saved[si], si); }
+    const st = photoStage.find(x => x.pose === p);
+    if (st) return `<figure class="pslot filled"><img src="${st.url}" alt="${POSES[p]} (kaydedilmedi)"><button type="button" class="pdelx" data-unstage="${st.id}" aria-label="${POSES[p]} fotoğrafını çıkar">×</button><span class="pposelbl">${POSES[p]} · yeni</span></figure>`;
+    return `<label class="pslot empty"><span>${POSES[p]}</span><b>+</b><input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden></label>`;
+  }).join('');
+  /* photos saved by older versions (more than one per pose) are still shown, after the three slots */
+  const extra = saved.map((p, i) => used.has(i) ? '' : tile(p, i)).join('');
+  let h = `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;margin-top:0"><div style="min-width:0"><h3>${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}</h3><p class="muted small">${DAYNAMES[dt.getDay()]}${nDay > 0 ? ' · ' + nDay + '. gün' : ''} · ${saved.length} fotoğraf</p></div><button type="button" class="iconbtn" data-act="photoClose" aria-label="Kapat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
+  h += `<div class="pslots pview3">${slots}${extra}</div>`;
+  if (photoStage.length) h += `<button type="button" class="btn primary full" data-act="photoSave" style="margin-top:12px">Kaydet (${photoStage.length} fotoğraf)</button>`;
+  h += `<button type="button" class="btn full" data-act="photoClose" style="margin-top:${photoStage.length ? 8 : 14}px">Kapat</button>`;
   photoOpen = d;
   openSheet(h);
   const s = document.querySelector('#sheetBg .sheet'); if (s) s.classList.add('photosheet');
@@ -2278,7 +2281,7 @@ function sessAction(a){
     save(); closeSheet(); render(); toast((kind === 'walk' ? 'Yürüyüş' : 'Antrenman') + ' kaydedildi: ' + min + ' dk');
   }
 }
-document.addEventListener('click', e => { if (e.target.id === 'sheetBg'){ closeSheet(); photoOpen = null; photoDel = null; const pd = document.getElementById('photoDate'); if (pd) pd.value = ''; } });
+document.addEventListener('click', e => { if (e.target.id === 'sheetBg'){ closeSheet(); if (photoOpen) clearStage(); photoOpen = null; photoDel = null; const pd = document.getElementById('photoDate'); if (pd) pd.value = ''; } });
 function ensureWorkout(l, wk){ if (!l.w || l.w.key !== wk) l.w = {key:wk, ex:{}, done:false}; return l.w; }
 document.addEventListener('pointerdown', unlockAudio, {passive:true});
 document.addEventListener('click', e => {
@@ -2330,8 +2333,8 @@ document.addEventListener('click', e => {
   if (d.act === 'viewNext'){ openViewer(viewIdx + 1); return; }
   if (d.act === 'viewClose'){ closeViewer(); return; }
   if (d.act === 'photoSave'){ saveStaged(); return; }
-  if (d.unstage){ const x = photoStage.find(s => s.id === d.unstage); if (x) URL.revokeObjectURL(x.url); photoStage = photoStage.filter(s => s.id !== d.unstage); renderPhotos(); return; }
-  if (d.act === 'photoClose'){ photoOpen = null; photoDel = null; closeSheet(); const pd = document.getElementById('photoDate'); if (pd) pd.value = ''; return; }
+  if (d.unstage){ const x = photoStage.find(s => s.id === d.unstage); if (x) URL.revokeObjectURL(x.url); photoStage = photoStage.filter(s => s.id !== d.unstage); openPhotoDay(photoOpen); return; }
+  if (d.act === 'photoClose'){ clearStage(); photoOpen = null; photoDel = null; closeSheet(); const pd = document.getElementById('photoDate'); if (pd) pd.value = ''; return; }
   if (d.pdel){ photoDel = d.pdel; openPhotoDay(photoOpen); return; }
   if (d.act === 'pdelNo'){ photoDel = null; openPhotoDay(photoOpen); return; }
   if (d.act === 'pdelYes'){ const id = photoDel; photoDel = null; PDB.del(id).then(() => { renderPhotos(); openPhotoDay(photoOpen); toast('Fotoğraf silindi'); }).catch(() => toast('Silinemedi')); return; }
