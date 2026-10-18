@@ -155,30 +155,12 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .wrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--line)}
 .wrow:first-child{border-top:0;padding-top:0}
 .wrow .btn{flex:0 0 auto;font-size:13px;padding:8px 10px;min-height:36px}
-.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
-.cmp figure{margin:0;background:var(--surface-2);border-radius:12px;overflow:hidden}
-.cmp img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;max-width:100%}
-.cmp figcaption{font-size:12px;font-weight:700;padding:6px 8px;color:var(--muted)}
-.thumbs{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
-.pdays{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
-.pdays::-webkit-scrollbar{display:none}
-.pday{flex:0 0 auto;min-width:58px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:7px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.1}
-.pday b{font-family:var(--display);font-size:22px;font-weight:600}
-.pday span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.pday small{font-size:10.5px;color:var(--muted);margin-top:2px}
 .pform{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 .pform .f{min-width:0}
 .pform input{width:100%;box-sizing:border-box}
 .ptargets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .ptargets span{font-size:12.5px;padding:4px 10px;border-radius:99px;background:var(--surface-2)}
-.pday.today{border-color:var(--fg);border-width:2px}
 .photosheet{max-height:88vh;overflow-y:auto}
-.padd{flex-wrap:nowrap;gap:6px}
-.padd label.btn{flex:1;min-width:0;display:flex;justify-content:center;align-items:center;cursor:pointer;padding-left:6px;padding-right:6px}
-.pconf{display:inline-flex;gap:10px}
-.pdaybox{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px}
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:10px}
-.pgrid figure{margin:0;min-width:0;position:relative}
 .pslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
 .pslot.empty,.pslot.filled{aspect-ratio:3/4;padding:0;position:relative;overflow:hidden}
 .pslot.empty{cursor:pointer;align-items:center;justify-content:center;gap:8px;border-style:dashed}
@@ -205,8 +187,6 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .pv-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-size:38px;line-height:1;cursor:pointer}
 .pv-prev{left:8px} .pv-next{right:8px}
 .pv-cap{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;font-size:13px;font-weight:700;opacity:.85;margin:0}
-.pview{grid-template-columns:repeat(2,minmax(0,1fr))}
-.pview img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block}
 .pdelask{position:absolute;left:0;right:0;top:0;aspect-ratio:3/4;border-radius:10px;background:rgba(10,14,20,.78);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px}
 .pdelask span{font-size:13px;font-weight:700}
 .pdelask .btn{width:100%;max-width:110px;min-height:34px;padding:4px 8px;font-size:13px}
@@ -215,11 +195,6 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .pdelx{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(10,14,20,.72);color:#fff;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
 .pimg{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
 .pimg img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block}
-.pgrid figcaption{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;margin-top:4px}
-.pgrid .thx{position:static;width:22px;height:22px}
-.th{position:relative;flex:0 0 56px}
-.th img{width:56px;height:74px;object-fit:cover;border-radius:8px;display:block}
-.th span{display:block;font-size:11px;color:var(--muted);text-align:center}
 .thx{position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;border:0;background:var(--fg);color:var(--bg);font-weight:700;font-size:14px;line-height:22px;padding:0;cursor:pointer}
 .target.calib{background:var(--yellow-soft)} .target.calib .big{color:var(--fg)}
 .target.goaled{background:var(--green-soft)} .target.goaled .big{color:var(--green)}
@@ -918,7 +893,7 @@ function dayPlan(k, raw){
   const items = [];
   const add = o => items.push(Object.assign({type:'task'}, o));
   add({id:'isik', t:s.wake, cat:'sleep', title:'Kalk, 1 bardak su iç, gün ışığına çık', sub:'Erteleme tuşuna basma. 1 bardak su iç, perdeyi aç, 5–10 dakika balkonda veya cam önünde dur.'});
-  add({id:'sabah', t:addMin(s.wake,5), cat:'track', type:'ask', title:'Sabah kontrolü', sub:'İki soruyu cevapla. Koçun programı buna göre ayarlar.',
+  add({id:'sabah', t:addMin(s.wake,5), cat:'track', type:'ask', title:'Sabah kontrolü', sub:'',
     qs:[{key:'sleep', q:'Kaç saat uyudun?', opts:['5 veya az','6','7','8+']},{key:'energy', q:'Nasıl uyandın?', opts:['Yorgun','Normal','Dinç']}]});
   if (dow === 1) add({id:'olcum', t:addMin(s.wake,10), cat:'track', title:'Kilo ve bel ölç', sub:'Tuvaletten sonra, bir şey yemeden. Beli göbek deliği hizasından, nefes verince ölç. Aşağıdaki Ölçüm gir kutusuna yaz.', go:'meas'});
   if (dow === 1 && weekOf(k) % 2 === 1) add({id:'foto', t:addMin(s.wake,12), cat:'track', title:'Gelişim fotoğrafı çek', sub:'Ölçümden hemen sonra: ön, yan ve arka. Aynı yer, aynı ışık, şortla. İlerleme sekmesine ekle.', go:'progress'});
@@ -932,12 +907,12 @@ function dayPlan(k, raw){
   if (w) add({id:'ara', t:addMin(s.workout,-120), cat:'meal', title:'Antrenman öncesi: 1 muz + 150 g süzme peynir', sub:'Süzme peynir yoksa 200 g yoğurt. Antrenmanda enerjin olsun, kası koru. Atlama.', p:18, kcal:240});
   else add({id:'ara', t:'16:30', cat:'meal', title:'Ara öğün: 150 g süzme peynir', sub:'Yoksa 200 g yoğurt veya 2 haşlanmış yumurta. Kalori açığında kası korur. Atlama.', p:18, kcal:150});
   if (w){
-    add({id:'hazirlik', t:addMin(s.workout,-30), cat:'train', type:'ask', title:'Çantanı hazırla ve çık', sub:'Su şişesi (1 L), havlu, spor ayakkabı. Çıkmadan önce cevapla:',
+    add({id:'hazirlik', t:addMin(s.workout,-30), cat:'train', type:'ask', title:'Çantanı hazırla ve çık', sub:'Su şişesi, havlu, spor ayakkabı.',
       qs:[{key:'sore', q:'Kaslarında ağrı var mı?', opts:['Yok','Hafif','Çok']}]});
     const W = WORKOUTS[w];
     add({id:'antrenman', t:s.workout, cat:'train', title:'Antrenman: '+W.name, sub:(isDeload(k)?'Hafif hafta. ':'')+W.ex.length+' hareket, yaklaşık 60 dakika. Ağırlıkların hazır.', go:'workout'});
   } else {
-    add({id:'yuruyus', t:s.walk, cat:'train', title:'40–50 dakika eğimli yürüyüş', sub:'Koşu bandında %8–10 eğim, 5–5,5 km/s. Salona gidemezsen dışarıda yokuşlu, tempolu yürü. Bugün ağırlık yok. Gün hedefi 10.000 adım.'});
+    add({id:'yuruyus', t:s.walk, cat:'train', title:'40–50 dakika eğimli yürüyüş', sub:'Koşu bandında %8–10 eğim, 5–5,5 km/s. Gün hedefi 10.000 adım.'});
   }
   add({id:'aksam', t: w ? addMin(s.workout,90) : '20:00', cat:'meal', title: w ? 'Akşam yemeği (antrenman sonrası)' : 'Akşam yemeği', sub:'Tabağın yarısı sebze, avuç kadar et, tavuk, balık, köfte veya baklagil, 4–5 kaşık pilav veya 1 dilim ekmek.', p:30, kcal:650});
   if (!raw){
@@ -945,7 +920,7 @@ function dayPlan(k, raw){
     const short = ps < PROTEIN_OK;
     add({id:'protein', t:'21:00', cat:'supp', title: short ? 'Protein eksik: 1 ölçek whey iç' : 'Protein tamam', sub: short ? ('Şu ana kadar yaklaşık '+ps+' g aldın. Hedef '+PROFILE.protein+' g. 1 ölçek whey + 300 ml su karıştır, iç.') : ('Bugün yaklaşık '+ps+' g aldın. Ek whey gerekmez, sadece işaretle.')});
   }
-  add({id:'gunsonu', t:'21:15', cat:'track', type:'ask', title:'Gün sonu kontrolü', sub:'Dürüst cevap ver, koçun ona göre yönlendirir.',
+  add({id:'gunsonu', t:'21:15', cat:'track', type:'ask', title:'Gün sonu kontrolü', sub:'',
     qs:[{key:'offplan', q:'Plan dışı bir şey yedin mi?', opts:['Hayır','Biraz','Çok']},{key:'steps', q:'Bugün ne kadar yürüdün?', opts:['Az','Orta','Çok']}]});
   if (dow === 3) add({id:'cozdur', t:'21:30', cat:'meal', title:'2 kabı dondurucudan buzdolabına al', sub:'Perşembe ve cuma öğle yemeklerin.'});
   add({id:'ekran', t:addMin(s.sleep,-60), cat:'sleep', title:'Telefonu bırak', sub:'Ekranı kapat, ışıkları kıs. Yarının kıyafetini ve shake malzemesini hazırla.'});
@@ -1012,22 +987,22 @@ function recommend(key, nSets, k){
   const l = peekLog(k), sore = l && l.q && l.q.sore === 2;
   let r;
   if (last && e.type === 'kg' && last.w.cal && last.w.cal[key] !== undefined && !isDeload(k) && last.w.cal[key] !== Math.max(...last.sets.map(s => +s.kg || 0))){
-    r = {kg:last.w.cal[key], reps:Math.round((e.lo + e.hi) / 2), why:'Ayar setlerine göre senin ağırlığın '+fmt(last.w.cal[key])+' kg çıktı. Bugün her sette '+Math.round((e.lo + e.hi) / 2)+' tekrar yap.'};
+    r = {kg:last.w.cal[key], reps:Math.round((e.lo + e.hi) / 2), why:'Ayar setlerinden bulunan ağırlığın.'};
   } else if (!last){
-    if (e.type === 'kg') r = {kg:e.start, reps:e.hi, why:'İlk kez yapıyorsun. Bu ağırlık bilerek hafif: önce hareketi öğren. Tüm setleri '+e.hi+' tekrar yapabilirsen bir dahaki sefere uygulama ağırlığı artıracak.'};
-    else r = {kg:null, reps:e.start, why: e.type === 'sec' ? 'İlk kez. Formu bozmadan tutabildiğin kadar tut, süreyi yaz.' : 'İlk kez. Yapabildiğin kadar tekrar yap, sayıyı yaz.'};
+    if (e.type === 'kg') r = {kg:e.start, reps:e.hi, why:'İlk kez: bilerek hafif, önce hareketi öğren.'};
+    else r = {kg:null, reps:e.start, why: e.type === 'sec' ? 'İlk kez: tutabildiğin kadar tut, süreyi yaz.' : 'İlk kez: yapabildiğin kadar yap, sayıyı yaz.'};
   } else if (e.type === 'kg'){
     const top = Math.max(...last.sets.map(s => +s.kg || 0));
     const atTop = last.sets.filter(s => (+s.kg || 0) === top);
     const hit = atTop.length >= nSets && atTop.every(s => (+s.r || 0) >= e.hi);
-    if (isDeload(k)) r = {kg:roundTo(top*0.6, e.inc), reps:e.lo, why:'Hafif hafta: son ağırlığının %60’ı. Vücudun toparlanacak, sonraki hafta daha güçlü döneceksin.'};
+    if (isDeload(k)) r = {kg:roundTo(top*0.6, e.inc), reps:e.lo, why:'Hafif hafta: son ağırlığının %60’ı.'};
     else if (hit){
       const jump = (wk <= 8 && last.rpe === 0) ? e.inc*2 : e.inc; /* fast scenario: double jumps allowed for 8 weeks */
-      r = {kg:top + jump, reps:e.lo, why:'Geçen sefer tüm setlerde '+e.hi+' tekrar yaptın. Ağırlığı +'+fmt(jump)+' kg artırdım. Bugün '+e.lo+' tekrar yeterli, sonraki seferlerde tekrar sayısını '+e.hi+'’e çıkaracaksın.'};
+      r = {kg:top + jump, reps:e.lo, why:'Geçen sefer tüm setler tamam: +'+fmt(jump)+' kg.'};
     } else {
       const minR = Math.min(...atTop.map(s => +s.r || 0));
       const target = Math.min(e.hi, Math.max(e.lo, minR + 1));
-      r = {kg:top, reps:target, why:'Aynı ağırlık. Geçen sefer en zayıf setin '+minR+' tekrardı, bugün her sette '+target+' tekrar yap. Tüm setlerde '+e.hi+' tekrar olunca ağırlık artacak.'};
+      r = {kg:top, reps:target, why:'Aynı ağırlık, her sette '+target+' tekrar hedefle. Tüm setler '+e.hi+' olunca kilo artar.'};
     }
   } else {
     const best = Math.max(...last.sets.map(s => +s.r || 0)), step = e.type === 'sec' ? 5 : 1;
@@ -1039,14 +1014,14 @@ function recommend(key, nSets, k){
     if (e.type === 'kg' && r.kg > g){
       const top = last ? Math.max(...last.sets.map(s => +s.kg || 0)) : 0;
       r.kg = Math.max(g, top); r.reps = e.hi; r.goal = true;
-      r.why = 'Hedef ağırlığa ulaştın ('+fmt(g)+' kg). Artık artırma yok: bu ağırlıkla temiz ve kontrollü '+e.hi+' tekrar yap, kazandığını koru.';
+      r.why = 'Hedefe ulaştın ('+fmt(g)+' kg). Artırma yok, temiz '+e.hi+' tekrar.';
     } else if (e.type !== 'kg' && r.reps > g){
       r.reps = g; r.goal = true;
-      r.why = 'Hedefe ulaştın ('+g+(e.type === 'sec' ? ' sn' : ' tekrar')+'). Her sette bunu koru, formu mükemmel yap.';
+      r.why = 'Hedefe ulaştın ('+g+(e.type === 'sec' ? ' sn' : ' tekrar')+'). Bunu koru.';
     }
   }
-  if (calibrating(key, k) && r.kg !== null){ r.cal = true; r.reps = Math.round((e.lo + e.hi) / 2); r.why = 'Ayar seti: bu hafif ağırlıkla başla, her sette '+r.reps+' tekrar yap. Setten sonra kaç tekrar daha yapabileceğini seç; uygulama sonraki setin kilosunu ayarlar. Bulunan ağırlık kaydedilir, sonraki antrenmanlarda uygulama seni yönlendirir.'; }
-  if (sore && r.kg){ r.kg = roundTo(r.kg*0.85, e.inc); r.why = 'Kaslarında çok ağrı olduğunu söyledin, bugün ağırlığı %15 azalttım. ' + r.why; }
+  if (calibrating(key, k) && r.kg !== null){ r.cal = true; r.reps = Math.round((e.lo + e.hi) / 2); r.why = 'Ayar seti: her sette '+r.reps+' tekrar yap, sonra kaç tekrar daha yapabileceğini seç. Kilonu uygulama ayarlar.'; }
+  if (sore && r.kg){ r.kg = roundTo(r.kg*0.85, e.inc); r.why = 'Kas ağrısı: bugün %15 hafif. ' + r.why; }
   return r;
 }
 function warmupText(key, kg){
@@ -1170,7 +1145,7 @@ const PDB = {
   put(p){ return this.tx('readwrite', s => s.put(p)); },
   del(id){ return this.tx('readwrite', s => s.delete(id)); }
 };
-let photoPose = 'on', photoDel = null, photoUrls = [], photoDay = null, photoOpen = null;
+let photoPose = 'on', photoDel = null, photoUrls = [], photoOpen = null;
 function compressImage(file){
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), img = new Image();
@@ -1197,12 +1172,12 @@ async function renderPhotos(){
   try { all = await PDB.all(); } catch(e){ box.innerHTML = '<p class="muted small">Bu tarayıcı fotoğraf saklamaya izin vermiyor. Uygulamayı telefona kurduğunda çalışır.</p>'; return; }
   if (seq !== photoSeq || !document.body.contains(box)) return;
   const k = todayKey(), days = [...new Set(all.map(p => p.d))].sort();
-  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Her gün için ön, yan ve arka olmak üzere 3 fotoğraf. Tarihi seç: o günün fotoğrafları açılır, eksikleri oradan eklersin. Unuttuğun geçmiş bir günü de seçip ekleyebilirsin.</p>
+  let h = `<p class="muted small">2 haftada bir pazartesi sabahı: ön, yan, arka. Tarihi seç, fotoğrafları gör veya ekle.</p>
     <label class="f" style="margin-top:10px;display:block">Tarih seç<input type="date" id="photoDate" value="" max="${k}" style="width:100%;box-sizing:border-box"></label>
     <p class="muted small" style="margin-top:6px">${days.length ? days.length + ' günde fotoğraf var: ' + days.slice(-6).reverse().map(dShort).join(', ') + (days.length > 6 ? '…' : '') : 'Henüz kayıtlı fotoğraf yok.'}</p>`;
   const pairs = Object.keys(POSES).filter(p => all.filter(x => x.pose === p).length >= 2);
   if (pairs.length) h += `<p class="small" style="margin-top:14px;font-weight:700">Koçum incelesin: değişim var mı?</p><div class="row" style="margin-top:6px">${pairs.map(p => `<button type="button" class="btn" data-photoai="${p}">${POSES[p]}</button>`).join('')}</div><div id="photoAI" class="small" style="white-space:pre-wrap;margin-top:8px"></div>`;
-  h += `<p class="muted small" style="margin-top:10px">Fotoğraflar sadece bu cihazda saklanır. Yalnızca koça incelettiğinde Claude’a gönderilir.</p>`;
+  h += `<p class="muted small" style="margin-top:10px">Fotoğraflar sadece bu telefonda kalır.</p>`;
   box.innerHTML = h;
 }
 async function stagePhoto(file, pose){
@@ -1324,7 +1299,7 @@ function coachNotes(k){
       out.push(['red', 'Bugünkü '+WORKOUTS[w].name+' antrenmanı yapılmadı. '+(rd === 1 ? 'Yarın dinlenme günün: antrenmanı yarın yap.' : 'İlk dinlenme günün '+DAYNAMES[(dow + rd) % 7]+': o gün yap.')+' Antrenman sekmesinden '+WORKOUTS[w].name+'’yı seç.']);
     }
     else out.push(['blue', 'Bugün '+WORKOUTS[w].name+', saat '+state.settings.workout+'. Ne kaldıracağın Antrenman sekmesinde hazır.']);
-  } else out.push(['blue', 'Bugün ağırlık yok. 40–50 dakika eğimli yürüyüş yap, 10.000 adımı tamamla. Yağ yakımını en çok bu hızlandırır.']);
+  }
   if (l && l.q && l.q.sore === 2) out.push(['red', 'Kas ağrın çok. Bugünkü ağırlıklar %15 azaltıldı. Isınmayı uzun tut.']);
   const yk = addDays(k,-1);
   if (daysBetween(state.start, yk) >= 0){
@@ -1455,7 +1430,7 @@ function journeyHTML(compact){
     <p class="jbig">${left}<small> gün kaldı</small></p>
     <p class="small"><b>${done}</b> / ${GOAL_DAYS} tamamlanmış gün · %${pct}</p>
     ${next && next.d < GOAL_DAYS ? `<p class="small nextstop"><span class="pill p-blue">Sonraki durak</span><span>${esc(next.name)}: <b>${next.d - done} gün</b></span></p>` : ''}
-    <p class="muted small" style="margin-top:6px">${dayStatus(todayKey()) === 'full' ? 'Bugün tamamlandı, vücudun doldu. Yarın devam.' : 'Bugün %' + Math.round(tr * 100) + '. Görevlerin %90’ını ve ana görevleri (shake + kreatin, ' + (SCHEDULE[new Date().getDay()] ? 'antrenman' : 'yürüyüş') + ', magnezyum) yaparsan bu gün sayılır.'}</p>
+    <p class="muted small" style="margin-top:6px">${dayStatus(todayKey()) === 'full' ? 'Bugün tamamlandı, vücudun doldu. Yarın devam.' : 'Bugün %' + Math.round(tr * 100) + '. %90 + ana görevler = gün sayılır.'}</p>
     ${compact ? '<button type="button" class="link" data-go="progress" style="margin-top:6px">Takvimi gör →</button>' : ''}
   </div></div></div>`;
 }
@@ -1476,7 +1451,7 @@ function calendarHTML(){
   const tp = Math.round(todayRatio() * 100);
   return `<div class="card"><div class="cal">${MON.map(m => `<span class="ch">${m}</span>`).join('')}${lastWeeks.map(x => { if (x < state.start) return '<span class="cd pre" aria-hidden="true"></span>'; const st = dayStatus(x); return `<span class="cd ${st}${x === t ? ' is-today' : ''}" title="${dShort(x)} ${NAME[st]}">${parseKey(x).getDate()}</span>`; }).join('')}</div>
     <div class="legend calleg"><span><i style="background:var(--green)"></i>Sayılan <b>${cnt.full}</b></span><span><i style="background:var(--yellow)"></i>Yarım <b>${cnt.partial}</b></span><span><i style="background:var(--red)"></i>Kaçan <b>${cnt.missed}</b></span></div>
-    <p class="muted small" style="margin-top:6px">Bugün %${tp}. Görevlerin %90’ını ve ana görevleri bitirince bugünün kutusu <b style="color:var(--green)">yeşil</b> olur ve hedefe 1 gün eklenir. Yarım kalan gün sarı, hiç girilmeyen gün kırmızı olur ve sayılmaz.</p></div>`;
+    <p class="muted small" style="margin-top:6px">Yeşil: sayıldı · sarı: yarım · kırmızı: kaçtı.</p></div>`;
 }
 function phaseCardHTML(){
   const p = phaseInfo(), b = lastWaist(), left = Math.max(0, b - PROFILE.hedefBel), rate = weeklyWaistRate();
@@ -1564,7 +1539,7 @@ function heroHTML(k, plan){
   }
   const late = overdue.length > 1 ? `<p class="small" style="margin-top:10px;color:var(--red);font-weight:700">${overdue.length-1} görev daha bekliyor, aşağıdan işaretle.</p>` : '';
   const eyebrow = isNow ? `<span>ŞİMDİ YAP · ${it.t}</span>` : `<span>SIRADAKİ · ${it.t}</span><b id="nextIn" data-t="${it.t}">${untilText(it.t)}</b>`;
-  return `<div class="hero"><div class="eyebrow">${eyebrow}</div><h3>${esc(it.title)}</h3><p class="sub">${esc(it.sub)}</p>${actions}${late}</div>`;
+  return `<div class="hero"><div class="eyebrow">${eyebrow}</div><h3>${esc(it.title)}</h3>${it.sub ? `<p class="sub">${esc(it.sub)}</p>` : ''}${actions}${late}</div>`;
 }
 
 let settingsOpen = false, confirmReset = false;
@@ -1604,7 +1579,7 @@ function renderToday(){
     else if (it.id === 'antrenman') right = `<button type="button" class="chk${done?' on':''}" data-go="workout" aria-label="Antrenmanı aç">${done?'✓':'›'}</button>`;
     else right = `<button type="button" class="chk${done?' on':''}" data-check="${it.id}" aria-pressed="${done}" aria-label="${esc(it.title)}: yaptım">✓</button>`;
     html += `<div class="item${done?' done':''}${i===nowIdx?' now':''}"><div class="time">${it.t}<i style="background:${CAT[it.cat]}"></i></div><div class="body"><h3>${esc(it.title)} ${i===nowIdx?'<span class="pill p-red">şimdi</span>':''}${late?'<span class="pill p-gray">gecikti</span>':''}</h3>`
-      + (done ? '' : `<p>${esc(it.sub)}</p>`)
+      + (done || !it.sub ? '' : `<p>${esc(it.sub)}</p>`)
       + (it.type === 'ask' ? it.qs.map(q => `<div class="qlab">${esc(q.q)}</div>${optsHTML(k,it,q)}`).join('') : '')
       + `</div>${right}</div>`;
   });
@@ -1619,7 +1594,7 @@ function startDateHTML(){
   const k = todayKey(), pre = k < state.start;
   let h = `<div><p class="muted small" style="font-weight:700;margin-bottom:6px">Spora başlama tarihi</p>
     <div class="row" style="align-items:flex-end"><label class="f">Başlangıç<input type="date" id="startIn" value="${state.start}" min="${addDays(k, -90)}" max="${addDays(k, 365)}"></label><button type="button" class="btn" data-act="startSave">${state.startLocked ? 'Değiştir' : 'Kaydet'}</button></div>
-    <p class="muted small" style="margin-top:6px">${pre ? 'Programın ' + dLong(state.start) + ' başlıyor. O güne kadar görev ve bildirim gelmez.' : 'Program, hafta sayısı, hedef takvimi ve bildirimler bu tarihten başlar.'}</p>
+    <p class="muted small" style="margin-top:6px">${pre ? 'Programın ' + dLong(state.start) + ' başlıyor. O güne kadar görev ve bildirim gelmez.' : ''}</p>
     <p id="startErr" class="small" style="color:var(--red);margin-top:4px" hidden></p>`;
   if (startStep === 1) h += `<div class="confirm">Başlangıç tarihini <b>${dLong(pendingStart)}</b> yapacaksın. Hafta sayısı, hedef takvimi, ağırlık önerileri ve bildirimler bu tarihe göre yeniden kurulur. Devam edilsin mi?
       <div class="row" style="margin-top:8px"><button type="button" class="btn primary" data-act="startNext">Devam</button><button type="button" class="btn" data-act="startNo">Vazgeç</button></div></div>`;
@@ -1647,9 +1622,8 @@ function settingsHTML(){
       <label class="f">Antrenman<input type="time" id="setWorkout" value="${s.workout}"></label>
       <label class="f">Yürüyüş<input type="time" id="setWalk" value="${s.walk}"></label>
       <label class="f">Yatış<input type="time" id="setSleep" value="${s.sleep}"></label></div>
-    <p class="muted small">Bütün plan ve bildirimler bu saatlere göre kurulur. Değiştirdiğinde bildirimler de kendiliğinden yeni saate geçer.</p>
+    
     ${startDateHTML()}
-    <p class="muted small">Başlangıç ${esc(state.start.split('-').reverse().join('.'))} · ${PROFILE.boy} cm · ${fmt(PROFILE.kilo)} kg · bel ${fmt(PROFILE.bel)} cm · hedef bel ~${PROFILE.hedefBel} cm · günlük ${state.kcal} kcal, ${PROFILE.protein} g protein. Bilgilerini İlerleme sekmesinin en altından değiştirebilirsin.</p>
     ${backupHTML()}
     ${confirmReset
       ? `<div class="confirm">Bütün kayıtların silinecek ve program bugünden başlayacak. Emin misin?<div class="row" style="margin-top:8px"><button type="button" class="btn" data-act="resetYes" style="background:var(--red);color:var(--on-accent);border-color:var(--red)">Evet, sıfırla</button><button type="button" class="btn" data-act="resetNo">Vazgeç</button></div></div>`
@@ -1669,29 +1643,24 @@ function renderWorkout(){
   const wkey = currentWorkoutKey(), W = WORKOUTS[wkey];
   const anyLog = Object.values(state.logs).some(x => x.w && x.w.ex && Object.keys(x.w.ex).length);
   const gOpen = guideOpen === null ? !anyLog : guideOpen;
-  let html = `<details class="card guide" id="guideBox" style="margin-top:14px" ${gOpen?'open':''}><summary><h3>Salonda ne yapacağım? (ilk kez oku)</h3><span class="pill p-blue">rehber</span></summary><ol>
-    <li><b>Isın:</b> 5–10 dakika bisiklet veya yürüyüş bandında hafif tempo.</li>
-    <li><b>Sırayla git:</b> Aşağıdaki hareketleri yukarıdan aşağı sırayla yap.</li>
-    <li><b>Renkli kutu ne diyorsa onu yap:</b> “20 kg × 8 tekrar” = 20 kiloyla hareketi 8 kez arka arkaya yap. Buna 1 set denir. Kutuda kaç set yazıyorsa o kadar yap.</li>
-    <li><b>İlk hafta ayar haftası (sarı kutu):</b> Her hareketi ilk kez yaparken her setten sonra “kaç tekrar daha yapabilirdin?” sorusu çıkar. Dürüst cevapla, uygulama sonraki setin kilosunu ayarlar ve senin ağırlığını bulup kaydeder.</li>
-    <li><b>Her setten sonra ✓’e bas.</b> Dinlenme sayacı başlar. Süre bitince bir sonraki seti yap.</li>
-    <li><b>Yaptığını yaz:</b> 8 yerine 6 tekrar yapabildiysen 6 yaz, sonra ✓’e bas. Uygulama sonraki ağırlığını buna göre hesaplar.</li>
-    <li><b>Ağırlığı sen düşünme:</b> Bir hareketin bütün setlerinde üst tekrar sayısına ulaşınca uygulama bir sonraki sefer ağırlığı kendisi artırır. Ulaşamazsan aynı ağırlıkla devam edersin.</li>
-    <li><b>Doğru zorluk:</b> Son 1–2 tekrar zor gelmeli ama hareketin bozulmamalı. Bozuluyorsa o sette ağırlığı düşür ve yazdığın kiloyu düzelt.</li>
-    <li><b>Ağrı kuralı:</b> Kasta yanma ve ertesi gün kas ağrısı normaldir. Eklemde keskin ağrı olursa o hareketi bırak ve koçuna yaz.</li>
-    <li><b>Makinede tam o ağırlık yoksa</b> en yakın ağırlığı seç ve onu yaz. Dambıl ağırlıkları tek el içindir.</li>
-    <li><b>Bitirince</b> en alttaki “Antrenmanı bitir” düğmesine bas ve nasıl geçtiğini seç.</li></ol></details>`;
+  let html = `<details class="card guide" id="guideBox" style="margin-top:14px" ${gOpen?'open':''}><summary><h3>Salonda ne yapacağım?</h3><span class="pill p-blue">rehber</span></summary><ol>
+    <li><b>Isın:</b> 5–10 dk hafif bisiklet veya yürüyüş.</li>
+    <li><b>Kutu ne diyorsa yap:</b> “4 set · 20 kg × 8” = 20 kg ile 8 tekrar, 4 kez.</li>
+    <li><b>Her setten sonra ✓:</b> dinlenme sayacı başlar. Farklı yaptıysan önce sayıyı düzelt.</li>
+    <li><b>Sarı kutu (ilk hafta):</b> setten sonra “kaç tekrar daha yapabilirdin?” sorusunu dürüst cevapla, ağırlığını uygulama bulur.</li>
+    <li><b>Ağırlığı sen düşünme:</b> tüm setlerde üst tekrara ulaşınca uygulama artırır.</li>
+    <li><b>Eklemde keskin ağrı:</b> hareketi bırak, koçuna yaz.</li></ol></details>`;
   const todays = SCHEDULE[dow];
   /* rest day: today's job is the walk; the next workout is only a preview, never shown as today's */
   if (k >= state.start && !todays && !pickedWorkout && !(l && l.w) && !missedWorkout()){
     const nk = nextWorkoutKey(dow), walked = l && l.c && l.c.yuruyus, walking = state.sess && state.sess.kind === 'walk';
     const guide = html.replace('style="margin-top:14px" open>', 'style="margin-top:14px">');
     html = `<div class="card" style="margin-top:14px"><span class="pill p-green">Bugün · ${DAYNAMES[dow]}</span><h3 style="margin-top:8px">Dinlenme günü: eğimli yürüyüş</h3>
-      <ul class="clean small" style="margin-top:6px"><li>Koşu bandında %8–10 eğim, 5–5,5 km/s, 40–50 dakika.</li><li>Salona gidemezsen dışarıda yokuşlu ve tempolu yürü.</li><li>Gün hedefi 10.000 adım. Bugün ağırlık yok, kasların toparlanıyor.</li></ul>
+      <ul class="clean small" style="margin-top:6px"><li>Koşu bandında %8–10 eğim, 5–5,5 km/s, 40–50 dakika.</li><li>Salona gidemezsen dışarıda yokuşlu ve tempolu yürü.</li><li>Gün hedefi 10.000 adım.</li></ul>
       ${walked ? `<p class="small" style="margin-top:10px;color:var(--green);font-weight:700">Yürüyüş yapıldı ✓${l.walkMin ? ' · ' + l.walkMin + ' dk' : ''}</p>`
         : `<button type="button" class="btn primary full" data-act="walkStart" style="margin-top:12px">${walking ? 'Yürüyüş sürüyor · bitir' : 'Yürüyüşü başlat'}</button>`}</div>
       <div class="card" style="margin-top:12px"><p class="muted small" style="font-weight:700;letter-spacing:.04em">SIRADAKİ ANTRENMAN</p><h3 style="margin-top:4px">${WORKOUTS[nk].day} · ${esc(WORKOUTS[nk].name)}</h3>
-      <p class="muted small" style="margin-top:4px">${WORKOUTS[nk].ex.length} hareket. O gün ağırlıkların burada hazır olacak.</p>
+      <p class="muted small" style="margin-top:4px">${WORKOUTS[nk].ex.length} hareket.</p>
       <button type="button" class="btn full" data-pick="${nk}" style="margin-top:10px">Hareketlere göz at</button></div>` + guide;
     view.innerHTML = html;
     return;
@@ -1762,8 +1731,7 @@ function renderFood(){
     <div class="stat"><span>Kalori</span><b>${state.kcal}</b><span>kcal</span></div>
     <div class="stat"><span>Protein</span><b>${PROFILE.protein}</b><span>gram</span></div>
     <div class="stat"><span>Su</span><b>${fmt(PROFILE.su/1000)}</b><span>litre</span></div></div>
-    <p class="muted small" style="margin-top:8px">Kaloriyi sayman gerekmez. Aşağıdaki menüye uy, porsiyonlar bu hedefe göre ayarlı. Bel ölçün 2 hafta düşmezse uygulama hedefi kendisi düşürür.</p>`;
-  html += phaseCardHTML();
+    <p class="muted small" style="margin-top:8px">Kalori sayma, menüye uy. Bel 2 hafta düşmezse hedef kendiliğinden düşer.</p>`;
   /* today's menu, from the same plan as the Today tab (weekday vs weekend lunch, workout-day snack time) */
   const tk = todayKey(), td = parseKey(tk), tw = SCHEDULE[td.getDay()];
   const menu = dayPlan(tk, true).filter(it => ['kahvalti','ogle','ara','aksam','magnezyum','prep','cozdur'].includes(it.id));
@@ -1820,7 +1788,7 @@ let profileSex = null;
 function profileHTML(){
   const p = PROFILE, sp = state.profile || {}, sex = profileSex || p.cinsiyet;
   return `<h2>Kişisel bilgilerim</h2><div class="card" id="profileCard">
-    <p class="muted small">Spora başladığın günkü değerlerini yaz (başlangıç: ${dShort(state.start)}). Başlangıcı ileri bir tarihe aldıysan o sabah ölçtüğün değerleri gir. Kaydedince kalori, protein, su, hedefler ve aşamalar yeniden hesaplanır.</p>
+    <p class="muted small">Spora başladığın günkü değerler (${dShort(state.start)}). Kaydedince hedefler yeniden hesaplanır.</p>
     <div class="pform">
       <label class="f">Boy (cm)<input type="text" inputmode="numeric" id="pfBoy" value="${p.boy}"></label>
       <label class="f">Yaş<input type="text" inputmode="numeric" id="pfYas" value="${p.yas}"></label>
@@ -1830,7 +1798,7 @@ function profileHTML(){
       <label class="f">Hedef bel (cm)<input type="text" inputmode="decimal" id="pfHBel" value="${sp.hedefBel ? fmt(sp.hedefBel) : ''}" placeholder="otomatik ${p.autoBel}"></label>
     </div>
     <div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">${[['e','Erkek'],['k','Kadın']].map(([v,l]) => `<button type="button" class="${sex===v?'on':''}" data-sex="${v}">${l}</button>`).join('')}</div>
-    <p class="muted small" style="margin-top:8px">Hedef kilo ve beli boş bırakırsan boyuna göre kuru ve atletik görünüm için otomatik hesaplanır.</p>
+    <p class="muted small" style="margin-top:8px">Hedefleri boş bırakırsan otomatik hesaplanır.</p>
     <div class="ptargets"><span><b>${state.kcal}</b> kcal</span><span><b>${p.protein}</b> g protein</span><span><b>${fmt(p.su/1000)}</b> L su</span><span>hedef <b>${fmt(p.hedefKilo)}</b> kg</span><span>hedef bel <b>${p.hedefBel}</b> cm</span></div>
     <p id="pfErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>
     <button type="button" class="btn primary full" data-act="profileSave" style="margin-top:10px">Kaydet ve yeniden hesapla</button></div>`;
@@ -1863,7 +1831,7 @@ function measureCardHTML(){
     <label class="f">Kilo (kg)<input type="text" inputmode="decimal" id="mKg" placeholder="${fmt(last.kg)}" style="width:92px"></label>
     <label class="f">Bel (cm)<input type="text" inputmode="decimal" id="mBel" placeholder="${fmt(last.bel)}" style="width:92px"></label>
     <button type="button" class="btn primary" data-act="measure">Kaydet</button></div>
-    <p class="muted small" style="margin-top:8px">${doneToday ? 'Bugünkü ölçümün kaydedildi ✓ ' : monday ? 'Bugün ölçüm günü. ' : ''}Her pazartesi sabah, tuvaletten sonra ve aç karnına ölç. Beli göbek deliği hizasından, nefes verince ölç. Son ölçüm: ${dShort(last.d)} · ${fmt(last.kg)} kg · bel ${fmt(last.bel)} cm.</p>
+    <p class="muted small" style="margin-top:8px">${doneToday ? 'Bugünkü ölçümün kaydedildi ✓ ' : monday ? 'Bugün ölçüm günü. ' : ''}Pazartesi sabahı, aç karnına. Bel: göbek hizası. Son: ${dShort(last.d)} · ${fmt(last.kg)} kg · bel ${fmt(last.bel)} cm.</p>
     <p id="mErr" class="small" style="color:var(--red);margin-top:6px" hidden></p></div>`;
 }
 function renderProgress(){
@@ -1884,7 +1852,7 @@ function renderProgress(){
   html += phaseCardHTML();
   html += `<h2>Gelişim fotoğrafları</h2><div class="card" id="photoBox"><p class="muted small">Yükleniyor…</p></div>`;
   html += `<h2>Bel çevresi</h2><div class="card">${lineChart(m,'bel',PROFILE.hedefBel,'cm','var(--red)')}</div>`;
-  html += `<h2>Kilo</h2><div class="card">${lineChart(m,'kg',PROFILE.hedefKilo,'kg','var(--blue)')}<p class="muted small" style="margin-top:6px">Hedef kilo ~${fmt(PROFILE.hedefKilo)} kg. Kilonun bir süre sabit kalması normal: yağ giderken kas ekleniyor. Asıl gösterge bel.</p></div>`;
+  html += `<h2>Kilo</h2><div class="card">${lineChart(m,'kg',PROFILE.hedefKilo,'kg','var(--blue)')}<p class="muted small" style="margin-top:6px">Asıl gösterge bel. Kilo bir süre sabit kalabilir.</p></div>`;
   const rows = ['bench','squat','deadlift','row','ohp','pullup'].map(key => {
     let a = null, b = null;
     Object.keys(state.logs).sort().forEach(d => { const s = state.logs[d].w && state.logs[d].w.ex && state.logs[d].w.ex[key]; if (s){ const ok = s.filter(x => x && x.ok); if (ok.length){ const v = EX[key].type==='kg' ? Math.max(...ok.map(x=>+x.kg||0)) : Math.max(...ok.map(x=>+x.r||0)); if (a===null) a = v; b = v; } } });
@@ -1947,10 +1915,10 @@ function learned(){
 }
 function memoryCardHTML(){
   const lr = learned();
-  const learnedHTML = `<div class="learned"><p class="small" style="font-weight:700">Senin hakkında öğrendikleri</p>${lr.length ? `<ul class="clean small">${lr.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : `<p class="muted small">Birkaç gün kayıt girdikten sonra burada uykun, proteinin, kaçırdığın günler ve gelişimin hakkında öğrendikleri görünür.</p>`}</div>`;
+  const learnedHTML = `<div class="learned"><p class="small" style="font-weight:700">Senin hakkında öğrendikleri</p>${lr.length ? `<ul class="clean small">${lr.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : `<p class="muted small">Birkaç gün kayıttan sonra burada görünür.</p>`}</div>`;
   const list =state.mem.map((m,i) => `<li><span><b class="muted small">${esc(m.d.split('-').reverse().slice(0,2).join('.'))}${m.by === 'koç' ? ' · koç' : ''}</b> ${esc(m.t)}</span><button type="button" class="link" data-delmem="${i}">Sil</button></li>`).join('');
   return `<h2>Koçunun hafızası</h2><div class="card">
-    <p class="muted small">Koçun bu uygulamaya girdiğin her şeyi bilir: bütün antrenmanların ve ağırlıkların, öğünlerin, suyun, uykun, ölçümlerin, sabah ve akşam cevapların. Bunlara ek olarak bilmesi gerekenleri buraya yaz: ağrı, sevmediğin yemek, değişen iş saati.${sample ? ' Sohbette öğrendiği önemli şeyleri de kendisi ekler.' : ''}</p>
+    <p class="muted small">Koçun girdiğin her şeyi bilir. Ağrı, sevmediğin yemek gibi ekstra notları buraya yaz.</p>
     ${learnedHTML}
     ${list ? `<p class="small" style="font-weight:700;margin-top:12px">Notların</p><ul class="memlist">${list}</ul>` : ''}
     <form class="composer" id="memForm"><input id="memIn" type="text" placeholder="Örn: Sol dizim squatta ağrıyor" aria-label="Hafızaya not" value="${esc(memDraft)}"><button type="submit" class="btn">Ekle</button></form></div>`;
@@ -1978,9 +1946,9 @@ function renderCoach(){
   let html = `<h2>Koçunla konuş</h2>`;
   if (!sample){
     html += `<div class="card talk"><h3>Koçun Claude Pro planınla çalışır</h3>
-      <p class="muted small" style="margin-top:4px">Yazışma, sesli konuşma ve hafıza Cep Koçum’un koç ekranında. Bu telefondaki bütün kayıtların oraya kendiliğinden gider, koçun hafızaya yazdıkları buraya geri gelir. Ek ücret yok.</p>
+      <p class="muted small" style="margin-top:4px">Yazışma ve sesli konuşma koç ekranında. Kayıtların oraya kendiliğinden gider. Ek ücret yok.</p>
       <a class="btn primary full" href="${COACH_URL}" target="_blank" rel="noopener" style="margin-top:12px">${IC.mic}<span>Koçu aç</span></a>
-      <p class="muted small" style="margin-top:10px">İlk seferde açılan sayfada Paylaş → <b>Ana Ekrana Ekle</b> de. Ana ekranda koç için ikon olur, tek dokunuşla açılır.</p>
+      <p class="muted small" style="margin-top:10px">İpucu: açılan sayfada Paylaş → <b>Ana Ekrana Ekle</b>.</p>
       <p class="small sync">${esc(syncText())}</p></div>`;
   } else {
     const needAsk = phoneStatus === 'approval_required' || phoneStatus === 'not_in_manifest';
@@ -1989,7 +1957,7 @@ function renderCoach(){
       <div class="chathead"><b>Koç</b><span class="muted small">${voiceOn ? 'Sesli cevap açık' : 'Sesli cevap kapalı'}</span><button type="button" class="iconbtn${voiceOn ? ' on' : ''}" data-act="voiceToggle" aria-label="${voiceOn ? 'Sesli cevabı kapat' : 'Sesli cevabı aç'}">${voiceOn ? IC.spk : IC.mute}</button></div>
       ${state.chat.length
         ? `<div class="chat" id="chat">${state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('')}</div>`
-        : `<div class="chatempty"><p><b>Koçuna sor</b></p><p class="muted small">Bütün kayıtlarını ve hafızasını biliyor. Yaz ya da mikrofona basıp konuş.</p></div>
+        : `<div class="chatempty"><p><b>Koçuna sor</b></p><p class="muted small">Kayıtlarını biliyor. Yaz ya da konuş.</p></div>
            <div class="sugg">${COACH_QS.slice(0, 4).map(q => `<button type="button" data-ask="${esc(q)}"><span>${esc(q)}</span><i aria-hidden="true">›</i></button>`).join('')}</div>`}
       <form class="composer chatbar" id="composer"><textarea id="chatIn" rows="1" placeholder="Koçuna yaz…" aria-label="Mesaj"></textarea>
         <button type="button" class="iconbtn mic${listening ? ' rec' : ''}" data-act="mic" aria-label="${listening ? 'Dinlemeyi durdur' : 'Sesle konuş'}">${listening ? IC.stop : IC.mic}</button>
@@ -2326,7 +2294,6 @@ document.addEventListener('click', e => {
   }
   if (d.themeSet){ setTheme(d.themeSet); return; }
   if (d.alarmSet){ lsSet('cepkocum-alarm', d.alarmSet); render(); if (d.alarmSet === 'on') beep(); toast('Alarm sesi ' + (d.alarmSet === 'on' ? 'açık' : 'kapalı')); return; }
-  if (d.pose){ photoPose = d.pose; photoDel = null; renderPhotos(); return; }
   /* photos: pick a date, that day's photos open in the card; Kapat closes them */
   if (d.pview !== undefined){ openViewer(+d.pview); return; }
   if (d.act === 'viewPrev'){ openViewer(viewIdx - 1); return; }
