@@ -166,6 +166,11 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .pday b{font-family:var(--display);font-size:22px;font-weight:600}
 .pday span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .pday small{font-size:10.5px;color:var(--muted);margin-top:2px}
+.pform{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.pform .f{min-width:0}
+.pform input{width:100%;box-sizing:border-box}
+.ptargets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ptargets span{font-size:12.5px;padding:4px 10px;border-radius:99px;background:var(--surface-2)}
 .pday.today{border-color:var(--fg);border-width:2px}
 .photosheet{max-height:88vh;overflow-y:auto}
 .padd{flex-wrap:nowrap;gap:6px}
@@ -476,8 +481,23 @@ h3,p,li,.stat span,.note span{overflow-wrap:anywhere}
 /* =========================================================
    DATA
    ========================================================= */
-const PROFILE = {boy:168, kilo:69, bel:87.5, hedefBel:77, protein:140, su:3000};
-const PROTEIN_OK = PROFILE.protein - 10;
+/* body data the user enters (İlerleme → Kişisel bilgilerim); every target is derived from it.
+   Defaults are the values given when the app was made. */
+const PROFILE_DEFAULT = {boy:168, kilo:69, bel:87.5, yas:30, cinsiyet:'e'};
+const PROFILE = Object.assign({}, PROFILE_DEFAULT, {hedefBel:77, hedefKilo:65, protein:140, su:3000, kcal:1850, maint:2300});
+var PROTEIN_OK = 130;
+function calcTargets(p){
+  const bmr = 10*p.kilo + 6.25*p.boy - 5*p.yas + (p.cinsiyet === 'k' ? -161 : 5), tdee = bmr * 1.45; /* Mifflin-St Jeor, light activity */
+  const autoBel = Math.round(p.boy * 0.46), autoKilo = Math.round((p.cinsiyet === 'k' ? 21.5 : 23) * Math.pow(p.boy / 100, 2) * 2) / 2; /* lean, athletic look */
+  return {hedefBel: p.hedefBel > 0 ? p.hedefBel : autoBel, hedefKilo: p.hedefKilo > 0 ? p.hedefKilo : autoKilo, autoBel, autoKilo, protein: Math.round(p.kilo * 2 / 5) * 5, su: Math.max(2500, Math.round(p.kilo * 0.08) / 2 * 1000),
+    kcal: Math.round((tdee - 450) / 50) * 50, maint: Math.round(tdee / 50) * 50};
+}
+function applyProfile(){
+  const p = Object.assign({}, PROFILE_DEFAULT, (typeof state !== 'undefined' && state.profile) || {});
+  Object.assign(PROFILE, p, calcTargets(p));
+  PROTEIN_OK = PROFILE.protein - 10;
+  if (typeof PHASES !== 'undefined'){ PHASES[0].until = PROFILE.hedefBel + 6; PHASES[1].until = PROFILE.hedefBel + 1; MILESTONES[1].what = 'Karın çizgileri, bel ~' + (PROFILE.hedefBel + 1) + ' cm.'; }
+}
 const DAYNAMES = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
@@ -566,7 +586,7 @@ let state = defaultState(), tab = 'today', pickedWorkout = null;
 let docRef = null, saveTimer = null, writing = false, dirty = false;
 function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
 function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
-function save(){ state.at = Date.now(); lsSet('cepkocum', JSON.stringify(state)); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600); pushSync(); stateSync(); phonePush(); }
+function save(){ applyProfile(); state.at = Date.now(); lsSet('cepkocum', JSON.stringify(state)); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600); pushSync(); stateSync(); phonePush(); }
 async function flush(){
   if (!docRef) return;
   if (writing){ dirty = true; return; }
@@ -655,7 +675,7 @@ function pushPayload(){
   const k = todayKey();
   return {device_id:deviceId(), settings:state.settings, tz_offset:-new Date().getTimezoneOffset(), done_date:k,
     done_ids:dayPlan(k).filter(it => isDone(k, it)).map(it => it.id), start_date:state.start,
-    extra:{date:k, brief:workoutBrief(k), protein:proteinSoFar(k)}};
+    extra:{date:k, brief:workoutBrief(k), protein:proteinSoFar(k), ptarget:PROFILE.protein}};
 }
 async function pushApi(path, body){ const r = await fetch(PUSH_URL + '/' + path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}); return r.json(); }
 function pushSync(clearRemote){
@@ -1181,7 +1201,7 @@ async function analyzePhotos(btn){
   const first = list[0], last = list[list.length-1];
   const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d));
   const prompt = 'Sen bu kullanıcının fitness koçusun. Ekte aynı kişinin iki gelişim fotoğrafı var ('+POSES[photoPose]+' poz): 1. fotoğraf '+first.d+' (başlangıç), 2. fotoğraf '+last.d+' (son, '+daysBetween(first.d,last.d)+' gün sonra). '
-    + 'Kullanıcı 168 cm, spora sıfırdan başladı, hedefi Tom Holland gibi kuru ve atletik görünüm. Ölçümler: '+m.map(x => x.d+' '+x.kg+' kg, bel '+x.bel+' cm').join('; ')+'. '
+    + 'Kullanıcı ' + PROFILE.boy + ' cm, ' + PROFILE.yas + ' yaşında, spora sıfırdan başladı, hedefi Tom Holland gibi kuru ve atletik görünüm. Ölçümler: '+m.map(x => x.d+' '+x.kg+' kg, bel '+x.bel+' cm').join('; ')+'. '
     + 'İki fotoğrafı karşılaştır: omuz genişliği, kollar, göğüs, bel çizgisi ve karın bölgesinde görünür bir fark var mı? Işık, açı veya poz farkı karşılaştırmayı etkiliyorsa bunu söyle. Dürüst ol, olmayan bir değişimi abartma; 2-4 haftada değişimin az görünmesi normaldir. '
     + 'Sonra programa göre 3 maddelik net talimat ver. Türkçe, en fazla 10 satır, markdown başlık kullanma.';
   if (sample){
@@ -1248,7 +1268,7 @@ const PHASES = [
   {n:3, name:'Şekillendirme', until:0, weeks:'17. hafta ve sonrası', what:'Bakım kalorisi, omuz-kol-göğüs dolgunluğu, ağırlık hedeflerine ulaşma.'}
 ];
 function lastWaist(){ const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)); return m[m.length-1].bel; }
-function phaseInfo(){ const b = lastWaist(); return b > 83 ? PHASES[0] : b > 78 ? PHASES[1] : PHASES[2]; }
+function phaseInfo(){ const b = lastWaist(), h = PROFILE.hedefBel; return b > h + 6 ? PHASES[0] : b > h + 1 ? PHASES[1] : PHASES[2]; }
 function weeklyWaistRate(){
   const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d));
   if (m.length < 2) return null;
@@ -1386,9 +1406,9 @@ function phaseCardHTML(){
 function autoAdjust(){
   const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), last = m[m.length-1];
   /* entering stage 3: move to maintenance calories once */
-  if (last.bel <= 78 && !state.phase3){
-    state.phase3 = last.d; state.kcal = Math.max(state.kcal, 2200); state.lastAdjust = last.d;
-    state.notes.push({d:last.d, t:'Belin 78 cm’ye indi: aşama 3’e geçtin. Kaloriyi '+state.kcal+' kcal’a çıkardım. Artık amaç kas eklemek ve ağırlık hedeflerine ulaşmak. Akşam pilavını tam porsiyon ye.'});
+  if (last.bel <= PROFILE.hedefBel + 1 && !state.phase3){
+    state.phase3 = last.d; state.kcal = Math.max(state.kcal, PROFILE.maint); state.lastAdjust = last.d;
+    state.notes.push({d:last.d, t:'Belin ' + fmt(last.bel) + ' cm’ye indi: aşama 3’e geçtin. Kaloriyi '+state.kcal+' kcal’a çıkardım. Artık amaç kas eklemek ve ağırlık hedeflerine ulaşmak. Akşam pilavını tam porsiyon ye.'});
     return;
   }
   const prev = m.filter(x => daysBetween(x.d, last.d) >= 14).pop();
@@ -1484,7 +1504,7 @@ function renderToday(){
   html += `<div class="stats stats4">
     <div class="stat"><span>Kalori</span><b>${t.kcal}<small> / ${state.kcal}</small></b><div class="bar"><i style="width:${pK*100}%;background:${overK ? 'var(--red)' : 'var(--green)'}"></i></div>${overK ? '<span class="small" style="color:var(--red);font-weight:700">Hedef aşıldı</span>' : ''}</div>
     <div class="stat"><span>Protein</span><b>${t.p}<small> / ${PROFILE.protein} g</small></b><div class="bar"><i style="width:${pP*100}%;background:var(--yellow)"></i></div></div>
-    <div class="stat"><span>Su</span><b>${fmt(t.water/1000)}<small> / 3 L</small></b><div class="bar"><i style="width:${pW*100}%;background:var(--blue)"></i></div><button type="button" class="mini" data-water="250">+1 bardak</button></div>
+    <div class="stat"><span>Su</span><b>${fmt(t.water/1000)}<small> / ${fmt(PROFILE.su/1000)} L</small></b><div class="bar"><i style="width:${pW*100}%;background:var(--blue)"></i></div><button type="button" class="mini" data-water="250">+1 bardak</button></div>
     <div class="stat"><span>Görev</span><b>${t.done}<small> / ${t.total}</small></b><div class="bar"><i style="width:${pD*100}%;background:var(--green)"></i></div></div></div>`;
   html += measureCardHTML();
   const notes = coachNotes(k);
@@ -1544,7 +1564,7 @@ function settingsHTML(){
       <label class="f">Yatış<input type="time" id="setSleep" value="${s.sleep}"></label></div>
     <p class="muted small">Bütün plan ve bildirimler bu saatlere göre kurulur. Değiştirdiğinde bildirimler de kendiliğinden yeni saate geçer.</p>
     ${startDateHTML()}
-    <p class="muted small">Başlangıç ${esc(state.start.split('-').reverse().join('.'))} · 168 cm · 69 kg · bel 87,5 cm · hedef bel ~77 cm · günlük ${state.kcal} kcal, ${PROFILE.protein} g protein.</p>
+    <p class="muted small">Başlangıç ${esc(state.start.split('-').reverse().join('.'))} · ${PROFILE.boy} cm · ${fmt(PROFILE.kilo)} kg · bel ${fmt(PROFILE.bel)} cm · hedef bel ~${PROFILE.hedefBel} cm · günlük ${state.kcal} kcal, ${PROFILE.protein} g protein. Bilgilerini İlerleme sekmesinin en altından değiştirebilirsin.</p>
     ${backupHTML()}
     ${confirmReset
       ? `<div class="confirm">Bütün kayıtların silinecek ve program bugünden başlayacak. Emin misin?<div class="row" style="margin-top:8px"><button type="button" class="btn" data-act="resetYes" style="background:var(--red);color:var(--on-accent);border-color:var(--red)">Evet, sıfırla</button><button type="button" class="btn" data-act="resetNo">Vazgeç</button></div></div>`
@@ -1656,7 +1676,7 @@ function renderFood(){
   let html = `<h2>Günlük hedefin</h2><div class="stats" style="margin-top:0">
     <div class="stat"><span>Kalori</span><b>${state.kcal}</b><span>kcal</span></div>
     <div class="stat"><span>Protein</span><b>${PROFILE.protein}</b><span>gram</span></div>
-    <div class="stat"><span>Su</span><b>3</b><span>litre</span></div></div>
+    <div class="stat"><span>Su</span><b>${fmt(PROFILE.su/1000)}</b><span>litre</span></div></div>
     <p class="muted small" style="margin-top:8px">Kaloriyi sayman gerekmez. Aşağıdaki menüye uy, porsiyonlar bu hedefe göre ayarlı. Bel ölçün 2 hafta düşmezse uygulama hedefi kendisi düşürür.</p>`;
   html += phaseCardHTML();
   /* today's menu, from the same plan as the Today tab (weekday vs weekend lunch, workout-day snack time) */
@@ -1709,6 +1729,46 @@ function lineChart(points, field, goal, unit, color){
   if (points.length > 1) g += `<text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--muted)">${dd(lp.d)}</text>`;
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${field} grafiği">${g}</svg>`;
 }
+/* personal data = the values on the start day. Saving recalculates every target (calories, protein, water,
+   goal weight and waist, stage limits) and the baseline measurement, so a later start with a changed body works. */
+let profileSex = null;
+function profileHTML(){
+  const p = PROFILE, sp = state.profile || {}, sex = profileSex || p.cinsiyet;
+  return `<h2>Kişisel bilgilerim</h2><div class="card" id="profileCard">
+    <p class="muted small">Spora başladığın günkü değerlerini yaz (başlangıç: ${dShort(state.start)}). Başlangıcı ileri bir tarihe aldıysan o sabah ölçtüğün değerleri gir. Kaydedince kalori, protein, su, hedefler ve aşamalar yeniden hesaplanır.</p>
+    <div class="pform">
+      <label class="f">Boy (cm)<input type="text" inputmode="numeric" id="pfBoy" value="${p.boy}"></label>
+      <label class="f">Yaş<input type="text" inputmode="numeric" id="pfYas" value="${p.yas}"></label>
+      <label class="f">Başlangıç kilo (kg)<input type="text" inputmode="decimal" id="pfKilo" value="${fmt(p.kilo)}"></label>
+      <label class="f">Başlangıç bel (cm)<input type="text" inputmode="decimal" id="pfBel" value="${fmt(p.bel)}"></label>
+      <label class="f">Hedef kilo (kg)<input type="text" inputmode="decimal" id="pfHKilo" value="${sp.hedefKilo ? fmt(sp.hedefKilo) : ''}" placeholder="otomatik ${fmt(p.autoKilo)}"></label>
+      <label class="f">Hedef bel (cm)<input type="text" inputmode="decimal" id="pfHBel" value="${sp.hedefBel ? fmt(sp.hedefBel) : ''}" placeholder="otomatik ${p.autoBel}"></label>
+    </div>
+    <div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">${[['e','Erkek'],['k','Kadın']].map(([v,l]) => `<button type="button" class="${sex===v?'on':''}" data-sex="${v}">${l}</button>`).join('')}</div>
+    <p class="muted small" style="margin-top:8px">Hedef kilo ve beli boş bırakırsan boyuna göre kuru ve atletik görünüm için otomatik hesaplanır.</p>
+    <div class="ptargets"><span><b>${state.kcal}</b> kcal</span><span><b>${p.protein}</b> g protein</span><span><b>${fmt(p.su/1000)}</b> L su</span><span>hedef <b>${fmt(p.hedefKilo)}</b> kg</span><span>hedef bel <b>${p.hedefBel}</b> cm</span></div>
+    <p id="pfErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>
+    <button type="button" class="btn primary full" data-act="profileSave" style="margin-top:10px">Kaydet ve yeniden hesapla</button></div>`;
+}
+function saveProfile(){
+  const v = id => num(document.getElementById(id).value), raw = id => document.getElementById(id).value.trim(), er = document.getElementById('pfErr');
+  const p = {boy:Math.round(v('pfBoy')), kilo:v('pfKilo'), bel:v('pfBel'), yas:Math.round(v('pfYas')), cinsiyet:profileSex || PROFILE.cinsiyet,
+    hedefKilo: raw('pfHKilo') ? v('pfHKilo') : 0, hedefBel: raw('pfHBel') ? v('pfHBel') : 0};
+  const bad = !(p.boy >= 120 && p.boy <= 230) ? 'Boyu cm olarak yaz (örnek: 168).' : !(p.yas >= 14 && p.yas <= 90) ? 'Yaşını yaz.'
+    : !(p.kilo >= 30 && p.kilo <= 250) ? 'Kiloyu yaz (örnek: 69,5).' : !(p.bel >= 50 && p.bel <= 180) ? 'Bel çevresini cm olarak yaz (örnek: 87,5).'
+    : p.hedefKilo && !(p.hedefKilo >= 30 && p.hedefKilo <= 250) ? 'Hedef kiloyu kontrol et.' : p.hedefBel && !(p.hedefBel >= 50 && p.hedefBel <= 180) ? 'Hedef beli kontrol et.' : '';
+  if (bad){ er.textContent = bad; er.hidden = false; return; }
+  const oldBase = calcTargets(Object.assign({}, PROFILE_DEFAULT, state.profile || {}));
+  state.profile = p; applyProfile();
+  /* keep any automatic calorie adjustment the app already made, on top of the new base */
+  const shift = state.phase3 ? state.kcal - oldBase.maint : state.kcal - oldBase.kcal;
+  state.kcal = (state.phase3 ? PROFILE.maint : PROFILE.kcal) + shift;
+  /* the start-day measurement is the baseline */
+  const base = state.measurements.find(m => m.d === state.start);
+  if (base){ base.kg = p.kilo; base.bel = p.bel; } else state.measurements.push({d:state.start, kg:p.kilo, bel:p.bel});
+  profileSex = null; save(); render();
+  toast('Bilgilerin kaydedildi, hedeflerin yeniden hesaplandı');
+}
 /* weight + waist entry; lives on the Today tab (the Monday measurement is a daily task there) */
 function measureCardHTML(){
   const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), last = m[m.length-1], k = todayKey();
@@ -1725,10 +1785,12 @@ function renderProgress(){
   const m = state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)), first = m[0], last = m[m.length-1], k = todayKey();
   let html = '';
   const bd = last.bel - first.bel, kd = last.kg - first.kg, sign = v => (v > 0 ? '+' : '') + fmt(Math.round(v*10)/10);
-  html += `<h2 style="margin-top:4px">Durum</h2><div class="stats" style="margin-top:0">
+  const kgLeft = Math.round((last.kg - PROFILE.hedefKilo) * 10) / 10;
+  html += `<h2 style="margin-top:4px">Durum</h2><div class="stats stats4" style="margin-top:0">
     <div class="stat"><span>Bel</span><b>${fmt(last.bel)}<small> cm</small></b><span>başlangıçtan ${sign(bd)}</span></div>
     <div class="stat"><span>Kilo</span><b>${fmt(last.kg)}<small> kg</small></b><span>başlangıçtan ${sign(kd)}</span></div>
-    <div class="stat"><span>Hedefe</span><b>${fmt(Math.max(0, Math.round((last.bel-PROFILE.hedefBel)*10)/10))}<small> cm</small></b><span>bel kaldı</span></div></div>`;
+    <div class="stat"><span>Hedef bel</span><b>${PROFILE.hedefBel}<small> cm</small></b><span>${fmt(Math.max(0, Math.round((last.bel-PROFILE.hedefBel)*10)/10))} cm kaldı</span></div>
+    <div class="stat"><span>Hedef kilo</span><b>${fmt(PROFILE.hedefKilo)}<small> kg</small></b><span>${Math.abs(kgLeft) <= 0.5 ? 'hedefte' : fmt(Math.abs(kgLeft)) + ' kg ' + (kgLeft > 0 ? 'verilecek' : 'alınacak')}</span></div></div>`;
   const cd = completedDays();
   html += `<h2>Hedef takvimi</h2>` + journeyHTML(false).replace('card journey', 'card journey" style="margin-top:0')
     + `<div class="milestones">${MILESTONES.map(m => `<div class="${cd >= m.d ? 'got' : ''}"><b>${m.d}. gün</b>${esc(m.name)}<br><span class="muted">${esc(m.what)}</span></div>`).join('')}</div>`
@@ -1737,7 +1799,7 @@ function renderProgress(){
   html += phaseCardHTML();
   html += `<h2>Gelişim fotoğrafları</h2><div class="card" id="photoBox"><p class="muted small">Yükleniyor…</p></div>`;
   html += `<h2>Bel çevresi</h2><div class="card">${lineChart(m,'bel',PROFILE.hedefBel,'cm','var(--red)')}</div>`;
-  html += `<h2>Kilo</h2><div class="card">${lineChart(m,'kg',null,'kg','var(--blue)')}<p class="muted small" style="margin-top:6px">Kilonun sabit kalması normal: yağ giderken kas ekleniyor. Asıl gösterge bel.</p></div>`;
+  html += `<h2>Kilo</h2><div class="card">${lineChart(m,'kg',PROFILE.hedefKilo,'kg','var(--blue)')}<p class="muted small" style="margin-top:6px">Hedef kilo ~${fmt(PROFILE.hedefKilo)} kg. Kilonun bir süre sabit kalması normal: yağ giderken kas ekleniyor. Asıl gösterge bel.</p></div>`;
   const rows = ['bench','squat','deadlift','row','ohp','pullup'].map(key => {
     let a = null, b = null;
     Object.keys(state.logs).sort().forEach(d => { const s = state.logs[d].w && state.logs[d].w.ex && state.logs[d].w.ex[key]; if (s){ const ok = s.filter(x => x && x.ok); if (ok.length){ const v = EX[key].type==='kg' ? Math.max(...ok.map(x=>+x.kg||0)) : Math.max(...ok.map(x=>+x.r||0)); if (a===null) a = v; b = v; } } });
@@ -1753,6 +1815,7 @@ function renderProgress(){
     <div class="kv"><span>Dinç uyandığın gün</span><b>${qs.filter(q => q.energy === 2).length}</b></div>
     <div class="kv"><span>Plan dışı çok yediğin gün</span><b>${qs.filter(q => q.offplan === 2).length}</b></div></div>`;
   if (state.notes.length) html += `<h2>Koç kararları</h2><div class="stack">${state.notes.slice().reverse().map(n => `<div class="card"><p class="muted small">${esc(n.d.split('-').reverse().join('.'))}</p><p style="margin-top:2px">${esc(n.t)}</p></div>`).join('')}</div>`;
+  html += profileHTML();
   view.innerHTML = html;
   renderPhotos();
 }
@@ -1923,14 +1986,14 @@ function contextText(recentDays){
   const k = todayKey(), dt = parseKey(k), dow = dt.getDay(), tk = addDays(k, 1), tdow = parseKey(tk).getDay(), lines = [];
   for (let i = recentDays - 1; i >= 0; i--){ const d = addDays(k, -i); if (d >= state.start) lines.push(dayLine(d)); }
   const plan = dayPlan(k).map(it => it.t+' '+it.title+(isDone(k, it) ? ' ✓' : '')).join('; ');
-  return 'KULLANICI: 168 cm, başlangıç 69 kg, bel 87,5 cm. Spora sıfırdan başladı, hiç bilgisi yok. Eşiyle birlikte çalışıyor, zamanı kısıtlı. Sabahları dinç kalkamıyor. Hedef: Tom Holland gibi kuru ve atletik görünüm, bel ~77 cm.\n'
+  return 'KULLANICI: ' + (PROFILE.cinsiyet === 'k' ? 'kadın' : 'erkek') + ', ' + PROFILE.yas + ' yaş, ' + PROFILE.boy + ' cm, başlangıçta ' + fmt(PROFILE.kilo) + ' kg, bel ' + fmt(PROFILE.bel) + ' cm. Spora sıfırdan başladı, hiç bilgisi yok. Eşiyle birlikte çalışıyor, zamanı kısıtlı. Sabahları dinç kalkamıyor. Hedef: Tom Holland gibi kuru ve atletik görünüm, ~' + fmt(PROFILE.hedefKilo) + ' kg, bel ~' + PROFILE.hedefBel + ' cm.\n'
    + 'ŞU AN: '+DAYNAMES[dow]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]+' '+dt.getFullYear()+', saat '+nowHM()+'. '+(k < state.start ? 'Program henüz başlamadı: başlangıç '+dLong(state.start)+' ('+daysBetween(k, state.start)+' gün sonra). Bugünkü plan sadece bilgi içindir.' : 'Programın '+(daysBetween(state.start, k)+1)+'. günü, '+weekOf(k)+'. hafta'+(isDeload(k)?' (hafif hafta)':'')+'. Hedef takviminde '+completedDays()+'/'+GOAL_DAYS+' tam gün.')+'\n'
    + 'BUGÜN: '+(SCHEDULE[dow] ? 'antrenman günü. Bugünkü ağırlıklar: '+workoutBrief(k) : 'dinlenme günü, ağırlık yok; 40-50 dk eğimli yürüyüş.')+'\n'
    + 'BUGÜNÜN PLANI (✓ = yaptı): '+plan+'\n'
    + 'YARIN: '+DAYNAMES[tdow]+', '+(SCHEDULE[tdow] ? WORKOUTS[SCHEDULE[tdow]].name+' antrenmanı saat '+state.settings.workout : 'dinlenme + yürüyüş')+'.\n'
    + 'HAFTALIK PROGRAM: Pzt yürüyüş, Salı Üst A, Çarşamba Alt A, Perşembe yürüyüş, Cuma Üst B, Cumartesi Alt B, Pazar yürüyüş + öğle kaplarını hazırlama. Üst/alt split, çift aralıklı ilerleme (tüm setlerde üst tekrar → ağırlık artar), 9 haftada bir hafif hafta, hareket hedef ağırlığa ulaşınca bakım.\n'
-   + 'HIZLI SENARYO: '+phaseInfo().name+' (aşama '+phaseInfo().n+'/3). Aşama 1 bel>83 cm yağ yakımı, aşama 2 bel 78-83 kuru görünüm, aşama 3 bel≤78 şekillendirme (bakım kalorisi).\n'
-   + 'BESLENME: günlük '+state.kcal+' kcal, '+PROFILE.protein+' g protein, 3 L su. Kahvaltı whey+süt+muz+5 g kreatin shake; hafta içi öğle 200 g tavuk + pilav kabı, hafta sonu ev yemeği; ara öğün 150 g süzme peynir; akşam ev yemeği; protein eksikse 21:00 whey. Zorunlu: kreatin 5 g, whey, magnezyum glisinat 200-350 mg yatmadan 45 dk önce.\n'
+   + 'HIZLI SENARYO: '+phaseInfo().name+' (aşama '+phaseInfo().n+'/3). Aşama 1 bel>'+(PROFILE.hedefBel+6)+' cm yağ yakımı, aşama 2 bel '+(PROFILE.hedefBel+1)+'-'+(PROFILE.hedefBel+6)+' kuru görünüm, aşama 3 bel≤'+(PROFILE.hedefBel+1)+' şekillendirme (bakım kalorisi '+PROFILE.maint+' kcal).\n'
+   + 'BESLENME: günlük '+state.kcal+' kcal, '+PROFILE.protein+' g protein, '+fmt(PROFILE.su/1000)+' L su. Kahvaltı whey+süt+muz+5 g kreatin shake; hafta içi öğle 200 g tavuk + pilav kabı, hafta sonu ev yemeği; ara öğün 150 g süzme peynir; akşam ev yemeği; protein eksikse 21:00 whey. Zorunlu: kreatin 5 g, whey, magnezyum glisinat 200-350 mg yatmadan 45 dk önce.\n'
    + 'SAATLER: kalkış '+state.settings.wake+', kahvaltı '+state.settings.breakfast+', antrenman '+state.settings.workout+', yürüyüş '+state.settings.walk+', yatış '+state.settings.sleep+'.\n'
    + 'ÖLÇÜMLER: '+state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)).map(m => m.d+' '+fmt(m.kg)+' kg bel '+fmt(m.bel)+' cm').join('; ')+'\n'
    + (learned().length ? 'KAYITLARDAN ÖĞRENDİKLERİN (bunları dikkate alarak yönlendir):\n'+learned().map(t => '- '+t).join('\n')+'\n' : '')
@@ -2147,6 +2210,8 @@ document.addEventListener('click', e => {
   if (d.ans){ const [id,key,i] = d.ans.split('|'), l = dayLog(k); if (l.q[key] === +i) delete l.q[key]; else l.q[key] = +i; save(); render(); return; }
   if (d.water){ const l = dayLog(k); l.water = Math.min(6000, l.water + (+d.water)); if (l.water >= 1000) l.c.su = true; if (l.water >= 2000) l.c.su2 = true; save(); render(); return; }
   if (d.pick){ pickedWorkout = d.pick; render(); window.scrollTo(0, 0); return; }
+  if (d.sex){ profileSex = d.sex; document.querySelectorAll('[data-sex]').forEach(x => x.classList.toggle('on', x.dataset.sex === d.sex)); return; }
+  if (d.act === 'profileSave'){ saveProfile(); return; }
   if (d.act === 'startSave'){
     const v = (document.getElementById('startIn') || {}).value, er = document.getElementById('startErr');
     if (!v || v < addDays(k, -90) || v > addDays(k, 365)){ if (er){ er.textContent = 'Geçerli bir tarih seç (en fazla 90 gün geri, 1 yıl ileri).'; er.hidden = false; } return; }
@@ -2277,7 +2342,7 @@ document.addEventListener('keydown', e => {
 });
 
 function render(){
-  renderTabs(); renderHeader(); syncWakeLock();
+  applyProfile(); renderTabs(); renderHeader(); syncWakeLock();
   ({today:renderToday, workout:renderWorkout, food:renderFood, progress:renderProgress, coach:renderCoach}[tab] || renderToday)();
 }
 render();
