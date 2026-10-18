@@ -264,7 +264,29 @@ ul.clean,ol.clean{margin:0;padding-left:20px} ul.clean li,ol.clean li{margin:5px
 .composer input{flex:1;min-width:0}
 a.btn,a.chip{text-decoration:none;color:inherit;display:inline-flex;align-items:center;justify-content:center;text-align:center}
 a.btn.primary{color:var(--bg)}
-.talk a.btn.full{display:flex;min-height:52px;font-size:16px}
+.talk a.btn.full{display:flex;gap:8px;min-height:52px;font-size:16px}
+.talk a.btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sync{margin-top:8px;color:var(--muted);font-weight:600}
+.chats{padding:0;overflow:hidden}
+.chathead{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.chathead b{font-size:15px}
+.chathead span{flex:1;min-width:0}
+.chats .chat{max-height:52vh;min-height:140px;overflow-y:auto;padding:12px}
+.chats .chips{padding:0 12px;margin-top:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.chats .chips::-webkit-scrollbar{display:none}
+.chats .chip{white-space:nowrap;flex:0 0 auto}
+.chatbar{align-items:flex-end;gap:6px;padding:10px 12px 12px;margin-top:8px}
+.chatbar textarea{height:auto;min-height:44px;max-height:120px;border-radius:22px;padding:11px 14px;min-width:0}
+.chats #chatErr{padding:0 12px 10px}
+.iconbtn{width:44px;height:44px;flex:0 0 auto;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
+.iconbtn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.iconbtn svg .fillc{fill:currentColor;stroke:none}
+.iconbtn:active{transform:scale(.93)}
+.iconbtn.send{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.iconbtn.on{color:var(--green);border-color:var(--green)}
+.chathead .iconbtn{width:36px;height:36px}
+.iconbtn.mic.rec{background:var(--red);border-color:var(--red);color:#fff;animation:micpulse 1.2s ease-in-out infinite}
+@keyframes micpulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--red) 25%,transparent)}}
 .memlist{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
 .memlist li{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px;font-size:14px}
 .memlist li span{min-width:0;overflow-wrap:anywhere}
@@ -510,7 +532,7 @@ let state = defaultState(), tab = 'today', pickedWorkout = null;
 let docRef = null, saveTimer = null, writing = false, dirty = false;
 function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
 function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
-function save(){ lsSet('cepkocum', JSON.stringify(state)); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600); pushSync(); }
+function save(){ state.at = Date.now(); lsSet('cepkocum', JSON.stringify(state)); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600); pushSync(); stateSync(); phonePush(); }
 async function flush(){
   if (!docRef) return;
   if (writing){ dirty = true; return; }
@@ -547,16 +569,21 @@ let sample = null;
 async function connect(){
   if (!window.claude || !window.claude.use) return;
   try {
-    const [db, user, smp] = await Promise.all([claude.use('db'), claude.use('user'), claude.use('sample')]);
-    sample = smp;
+    const [db, user, smp, mcp] = await Promise.all([claude.use('db'), claude.use('user'), claude.use('sample'), claude.use('mcp')]);
+    sample = smp; mcpApi = mcp;
+    if (mcpApi) phoneStatus = 'loading';
     if (tab === 'coach') render();
-    if (!db || !user) return;
-    const id = await user.id();
-    if (!id) return;
-    docRef = db.doc('data/users/' + id + '/coach');
-    const snap = await docRef.get();
-    if (snap.exists){ state = merge(snap.data()); lsSet('cepkocum', JSON.stringify(state)); render(); }
-    else flush();
+    if (db && user){
+      const id = await user.id();
+      if (id){
+        docRef = db.doc('data/users/' + id + '/coach');
+        const snap = await docRef.get();
+        if (snap.exists){ const at = state.at; state = merge(snap.data()); if (!state.at) state.at = at || 0; lsSet('cepkocum', JSON.stringify(state)); render(); }
+        else flush();
+      }
+    }
+    phonePull();
+    setInterval(() => { if (document.visibilityState === 'visible') phonePull(); }, 60000);
   } catch(e){ console.warn('connect', e && e.code); }
 }
 
@@ -615,6 +642,79 @@ async function pullRemote(){
     pushSync(true); render();
     toast('Saatten işaretlediklerin eklendi');
   } catch(e){}
+}
+/* ONE RECORD EVERYWHERE: the phone app and the claude.ai coach keep the same full state in Supabase (cep_state).
+   Whole-document, last writer wins by state.at. The phone talks to the cep-push function; the claude.ai
+   version reaches the same table through the viewer's Supabase connector. */
+var stateTimer = null, stateSentAt = 0, mcpApi = null, phoneId = null, phoneAt = 0, phoneStatus = '', phoneTimer = null;
+const SB = 'Supabase', SB_PROJECT = 'xecyuvfzzrbsgtgumoqz';
+function adoptRemote(s, at){
+  state = merge(s); state.at = at;
+  lsSet('cepkocum', JSON.stringify(state)); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600);
+  const busy = document.activeElement && ['INPUT','TEXTAREA'].includes(document.activeElement.tagName);
+  if (!busy && !chatBusy && !listening) render();
+}
+function stateSync(){
+  if (!PWA) return;
+  clearTimeout(stateTimer);
+  stateTimer = setTimeout(async () => {
+    const at = state.at || 0; if (at <= stateSentAt) return;
+    try {
+      const j = await pushApi('state-save', {device_id:deviceId(), state, state_at:at});
+      if (j && j.ok){ stateSentAt = j.stale ? Math.max(stateSentAt, at) : at; if (j.stale) statePull(); }
+    } catch(e){}
+  }, 1500);
+}
+async function statePull(){
+  if (!PWA) return;
+  try {
+    const j = await pushApi('state-load', {device_id:deviceId(), after:state.at || 0});
+    if (j && j.state && j.state_at > (state.at || 0)){ adoptRemote(j.state, j.state_at); stateSentAt = j.state_at; }
+    else if (j && (state.at || 0) > (j.state_at || 0)) stateSync();
+    else if (j) stateSentAt = Math.max(stateSentAt, j.state_at || 0);
+  } catch(e){}
+}
+if (PWA){
+  statePull();
+  setInterval(() => { if (document.visibilityState === 'visible') statePull(); }, 60000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') statePull(); });
+}
+/* connector results come back as text with the rows inside an untrusted-data wrapper */
+function sqlRows(res){
+  const p = res && res.payload;
+  const t = typeof p === 'string' ? p : p && typeof p.result === 'string' ? p.result : ((res && res.content) || []).map(c => c.text || '').join('');
+  const m = /<untrusted-data-[^>]*>\s*([\s\S]*?)\s*<\/untrusted-data/.exec(t || '');
+  try { return JSON.parse(m ? m[1] : t); } catch(e){ return null; }
+}
+async function sql(q){ return sqlRows(await mcpApi.callTool(SB, 'execute_sql', {project_id:SB_PROJECT, query:q}, {cache:false})); }
+async function phonePull(userAsked){
+  if (!mcpApi || (phoneStatus === 'approval_required' && !userAsked)) return;
+  try {
+    /* the phone with notifications on is the real one; otherwise the most recently used device */
+    const rows = await sql('select s.device_id, s.state_at, s.state from public.cep_state s left join public.cep_push p on p.device_id = s.device_id order by (p.device_id is not null) desc, s.state_at desc limit 1');
+    const r = rows && rows[0];
+    if (!r || !/^[a-f0-9-]{36}$/.test(r.device_id)){ phoneStatus = 'none'; if (tab === 'coach') renderCoach(); return; }
+    phoneId = r.device_id; const at = Number(r.state_at) || 0;
+    phoneStatus = 'ok';
+    if (at > (state.at || 0)){ phoneAt = at; adoptRemote(r.state, at); }
+    else { phoneAt = Math.max(phoneAt, at); if ((state.at || 0) > at) phonePush(); if (tab === 'coach' && !chatBusy && !listening) renderCoach(); }
+  } catch(e){
+    phoneStatus = (e && e.code) || 'upstream_error';
+    if (tab === 'coach' && !chatBusy) renderCoach();
+  }
+}
+function phonePush(){
+  if (!mcpApi || !phoneId || phoneStatus !== 'ok') return;
+  clearTimeout(phoneTimer);
+  phoneTimer = setTimeout(async () => {
+    const at = state.at || 0; if (at <= phoneAt) return;
+    const js = JSON.stringify(state), tag = 'cep' + Math.random().toString(36).slice(2, 9);
+    if (js.includes('$' + tag + '$')) return;
+    try {
+      await sql(`update public.cep_state set state = $${tag}$${js}$${tag}$::jsonb, state_at = ${at}, updated_at = now() where device_id = '${phoneId}' and state_at < ${at}`);
+      phoneAt = at;
+    } catch(e){ phoneStatus = (e && e.code) || 'upstream_error'; }
+  }, 4000);
 }
 /* rest timer on the server, so the "next set" alert reaches the watch with the phone locked */
 function restPush(seconds, nextText){
@@ -1558,31 +1658,75 @@ function memoryCardHTML(){
     ${list ? `<ul class="memlist">${list}</ul>` : ''}
     <form class="composer" id="memForm"><input id="memIn" type="text" placeholder="Örn: Sol dizim squatta ağrıyor" aria-label="Hafızaya not" value="${esc(memDraft)}"><button type="submit" class="btn">Ekle</button></form></div>`;
 }
-function extLink(cls, attrs, label){ return `<a class="${cls}" href="https://claude.ai/new" target="_blank" rel="noopener" ${attrs}>${label}</a>`; }
+/* the coach chat lives in the claude.ai version (it runs on the user's Claude Pro plan, no API credits);
+   the phone app links to it, and both share one record through Supabase */
+const COACH_URL = 'https://claude.ai/artifact/5Kowa7k6HXa4619fYKgTwc';
+const IC = {
+  mic:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>',
+  send:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2" class="fillc"/></svg>',
+  spk:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+  mute:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>'
+};
+let voiceOn = lsGet('cepkocum-voice') === 'on', rec = null, listening = false;
+function syncText(){
+  if (PWA) return stateSentAt ? 'Koçla eşitlendi · ' + hmOf(stateSentAt) : (pushOn ? 'Eşitleniyor…' : 'Eşitleme için bildirimlerin açık olması gerekmez; internet yeterli.');
+  return ({ok:'Telefondaki kayıtların bağlı · ' + (phoneAt ? hmOf(phoneAt) : ''), none:'Telefondaki uygulama henüz kayıt göndermedi. Telefonda Cep Koçum’u bir kez aç.',
+    server_not_connected:'Supabase bağlayıcısı yok: claude.ai Ayarlar → Bağlayıcılar’dan Supabase’i ekle.', needs_reauth:'Supabase bağlantısı düşmüş: claude.ai Ayarlar → Bağlayıcılar’dan yeniden bağlan.',
+    approval_required:'Telefondaki kayıtlarını okumak için izin gerekiyor.', not_in_manifest:'Telefondaki kayıtlarını okumak için izin gerekiyor.', loading:'Telefondaki kayıtların yükleniyor…'})[phoneStatus]
+    || (phoneStatus ? 'Telefondaki kayıtlara şu an ulaşılamadı. Biraz sonra tekrar denenecek.' : 'Telefon bağlantısı bu görünümde yok.');
+}
+const hmOf = ts => { const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
 function renderCoach(){
   let html = `<h2>Koçunla konuş</h2>`;
-  html += `<div class="card talk">
-    ${extLink('btn primary full', 'data-talk="voice"', '🎙 Sesli konuş')}
-    ${sample ? '' : extLink('btn full', 'data-talk="text" style="margin-top:8px"', '✍️ Yazarak sor')}
-    <p class="muted small" style="margin-top:10px">Claude açılır, koçun bütün kayıtlarınla birlikte gelir. Claude üyeliğini kullanır, ek ücret yok. Sesli konuşmak için açılan sohbette <b>ses dalgası</b> düğmesine bas; AirPods ile set aralarında konuşabilirsin.</p>
-    <p id="talkNote" class="small" style="margin-top:6px;color:var(--green)" hidden></p></div>`;
   if (!sample){
-    html += `<div class="chips">${COACH_QS.map(q => extLink('chip', `data-ext="${esc(q)}"`, esc(q) + ' ↗')).join('')}</div>
-      <div class="composer"><textarea id="chatIn" placeholder="Sorunu yaz…" aria-label="Soru"></textarea>${extLink('btn primary', 'data-ext=""', 'Sor ↗')}</div>
-      <p id="chatErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>`;
+    html += `<div class="card talk"><h3>Koçun Claude Pro planınla çalışır</h3>
+      <p class="muted small" style="margin-top:4px">Yazışma, sesli konuşma ve hafıza Cep Koçum’un koç ekranında. Bu telefondaki bütün kayıtların oraya kendiliğinden gider, koçun hafızaya yazdıkları buraya geri gelir. Ek ücret yok.</p>
+      <a class="btn primary full" href="${COACH_URL}" target="_blank" rel="noopener" style="margin-top:12px">${IC.mic}<span>Koçu aç</span></a>
+      <p class="muted small" style="margin-top:10px">İlk seferde açılan sayfada Paylaş → <b>Ana Ekrana Ekle</b> de. Ana ekranda koç için ikon olur, tek dokunuşla açılır.</p>
+      <p class="small sync">${esc(syncText())}</p></div>`;
   } else {
-    html += `<div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
-    html += `<div class="chat" id="chat">${state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('')}</div>`;
-    html += `<form class="composer" id="composer"><textarea id="chatIn" placeholder="Koçuna yaz…" aria-label="Mesaj"></textarea><button type="submit" class="btn primary">${chatBusy?'Durdur':'Gönder'}</button></form><p id="chatErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>`;
-    if (state.chat.length) html += `<div style="margin-top:10px"><button type="button" class="link" data-act="clearChat">Sohbeti temizle</button></div>`;
+    const needAsk = phoneStatus === 'approval_required' || phoneStatus === 'not_in_manifest';
+    html += `<p class="small sync" style="margin:-4px 0 10px">${esc(syncText())}${needAsk ? ' <button type="button" class="link" data-act="phoneAllow">İzin ver</button>' : ''}</p>`;
+    html += `<div class="chats card">
+      <div class="chathead"><b>Koç</b><span class="muted small">${voiceOn ? 'Sesli cevap açık' : 'Sesli cevap kapalı'}</span><button type="button" class="iconbtn${voiceOn ? ' on' : ''}" data-act="voiceToggle" aria-label="${voiceOn ? 'Sesli cevabı kapat' : 'Sesli cevabı aç'}">${voiceOn ? IC.spk : IC.mute}</button></div>
+      <div class="chat" id="chat">${state.chat.length ? state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('') : `<p class="muted small" style="text-align:center;padding:18px 6px">Koçun bütün kayıtlarını ve hafızasını biliyor. Yaz ya da mikrofona basıp konuş.</p>`}</div>
+      <div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+      <form class="composer chatbar" id="composer"><textarea id="chatIn" rows="1" placeholder="Koçuna yaz…" aria-label="Mesaj"></textarea>
+        <button type="button" class="iconbtn mic${listening ? ' rec' : ''}" data-act="mic" aria-label="${listening ? 'Dinlemeyi durdur' : 'Sesle konuş'}">${listening ? IC.stop : IC.mic}</button>
+        <button type="submit" class="iconbtn send" aria-label="${chatBusy ? 'Durdur' : 'Gönder'}">${chatBusy ? IC.stop : IC.send}</button></form>
+      <p id="chatErr" class="small" style="color:var(--red);margin-top:6px" hidden></p></div>`;
+    if (state.chat.length) html += `<div style="margin-top:8px"><button type="button" class="link" data-act="clearChat">Sohbeti temizle</button></div>`;
   }
   html += memoryCardHTML();
-  html += `<details class="card" style="margin-top:14px"><summary><b>Claude’u ilk kez kuruyorsan</b></summary><ol class="clean small" style="margin-top:8px">
-    <li>App Store’dan <b>Claude</b> uygulamasını indir, üyeliğinle giriş yap.</li>
-    <li>Claude → Ayarlar → <b>Hafıza</b>’yı aç. Böylece sohbetler arasında da seni hatırlar.</li>
-    <li>Ekran kilitlenince ses kesiliyorsa antrenmanda iPhone Ayarlar → Ekran → Otomatik Kilit’i “Hiçbir Zaman” yap, sonra geri al.</li></ol></details>`;
   view.innerHTML = html;
-  const c = document.getElementById('chat'); if (c && c.lastElementChild) c.lastElementChild.scrollIntoView({block:'nearest'});
+  const c = document.getElementById('chat'); if (c) c.scrollTop = c.scrollHeight;
+}
+/* voice: replies read aloud with the phone's Turkish voice; speech input through the browser when it allows the
+   microphone, otherwise the keyboard's dictation key (always available on iPhone) */
+function speak(t){
+  if (!voiceOn || !window.speechSynthesis) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(t).replace(MEM_RE, '').replace(/\*\*/g, '').replace(/^[-•]\s*/gm, ''));
+    u.lang = 'tr-TR'; u.rate = 1.03;
+    const v = speechSynthesis.getVoices().find(x => /^tr/i.test(x.lang)); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch(e){}
+}
+function dictateHint(){ const i = document.getElementById('chatIn'); if (i) i.focus(); toast('Klavyedeki mikrofon tuşuna basıp konuş, sonra gönder'); }
+function toggleMic(){
+  if (listening && rec){ try { rec.stop(); } catch(e){} return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return dictateHint();
+  try {
+    rec = new SR(); rec.lang = 'tr-TR'; rec.interimResults = true; rec.continuous = false;
+    let heard = '';
+    rec.onresult = e => { heard = Array.from(e.results).map(r => r[0].transcript).join(''); const i = document.getElementById('chatIn'); if (i) i.value = heard; };
+    rec.onerror = e => { listening = false; if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture'){ heard = ''; renderCoach(); dictateHint(); } };
+    rec.onend = () => { listening = false; renderCoach(); if (heard.trim() && !chatBusy) sendChat(heard); };
+    rec.start(); listening = true; if (window.speechSynthesis) speechSynthesis.cancel(); renderCoach();
+  } catch(e){ listening = false; dictateHint(); }
 }
 function fmtAI(t){ return esc(String(t).replace(MEM_RE, '').trim()).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,''); }
 function dayLine(d){
@@ -1650,15 +1794,6 @@ function coachRules(voice, recentDays){
    + (sample ? 'Kullanıcı hakkında kalıcı olarak hatırlanması gereken YENİ bir bilgi öğrenirsen (sakatlık, ağrı, sevmediği yiyecek, değişen saatler, hedef), cevabının en sonuna ayrı bir satırda [[HAFIZA: kısa not]] yaz. Bilinen şeyleri tekrar yazma.\n' : '')
    + '\n' + contextText(recentDays || 14);
 }
-/* the whole briefing travels in the claude.ai link; long histories are shortened to keep the link working */
-function coachPrompt(q, voice){
-  let p;
-  for (const n of [14, 10, 7, 4, 2]){
-    p = coachRules(voice, n) + '\n\n' + (voice ? 'Şimdi sesli moda geçeceğim. Önce bana tek cümleyle şu an ne yapmam gerektiğini söyle.' : 'SORUM: ' + q);
-    if (encodeURIComponent(p).length < 14000) break;
-  }
-  return p;
-}
 async function sendChat(text){
   const err = document.getElementById('chatErr');
   if (!text.trim()){ err.textContent = 'Önce bir mesaj yaz.'; err.hidden = false; return; }
@@ -1668,13 +1803,15 @@ async function sendChat(text){
   chatBusy = true; renderCoach();
   const bub = document.createElement('div'); bub.className = 'bub ai'; bub.textContent = 'Düşünüyor…';
   document.getElementById('chat').appendChild(bub); bub.scrollIntoView({block:'nearest'});
-  const turns = [{role:'user', content:coachRules(false)}].concat(state.chat.slice(-12));
+  const turns = [{role:'user', content:coachRules(voiceOn)}].concat(state.chat.slice(-12));
   chatCtl = new AbortController();
   const keep = ans => {
     const found = [...String(ans).matchAll(MEM_RE)].map(m => m[1]);
     found.forEach(t => addMemory(t, 'koç'));
-    state.chat.push({role:'assistant', content:String(ans).replace(MEM_RE, '').trim()});
+    const clean = String(ans).replace(MEM_RE, '').trim();
+    state.chat.push({role:'assistant', content:clean});
     if (found.length) toast('Koçun hafızasına eklendi');
+    speak(clean);
   };
   try {
     const {text:ans} = await sample(turns, {cache:false, signal:chatCtl.signal, onText:({text}) => { bub.innerHTML = fmtAI(text); }});
@@ -1845,17 +1982,6 @@ function sessAction(a){
 document.addEventListener('click', e => { if (e.target.id === 'sheetBg') closeSheet(); });
 function ensureWorkout(l, wk){ if (!l.w || l.w.key !== wk) l.w = {key:wk, ex:{}, done:false}; return l.w; }
 document.addEventListener('pointerdown', unlockAudio, {passive:true});
-/* coach links: fill in the full briefing at tap time (fresh time and data), copy it as a fallback, let the link open Claude */
-document.addEventListener('click', e => {
-  const a = e.target.closest('a[data-talk], a[data-ext]'); if (!a) return;
-  const voice = a.dataset.talk === 'voice', q = a.dataset.talk ? '' : (a.dataset.ext || (document.getElementById('chatIn') || {}).value || '').trim();
-  if (!a.dataset.talk && !q){ e.preventDefault(); const er = document.getElementById('chatErr'); if (er){ er.textContent = 'Önce sorunu yaz.'; er.hidden = false; } return; }
-  const body = coachPrompt(q || 'Bugün ne yapacağım?', voice);
-  a.href = 'https://claude.ai/new?q=' + encodeURIComponent(body);
-  try { navigator.clipboard.writeText(body).catch(() => {}); } catch(_){}
-  const n = document.getElementById('talkNote');
-  if (n){ n.textContent = (voice ? 'Claude açılıyor. Koçun ilk cevabı gelince ses dalgası düğmesine bas ve konuş.' : 'Claude açılıyor.') + ' Metin kutusu boş gelirse yapıştır: bütün bilgilerin panoya kopyalandı.'; n.hidden = false; }
-});
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset, k = todayKey();
@@ -1927,6 +2053,9 @@ document.addEventListener('click', e => {
   if (d.act === 'pushOn'){ b.disabled = true; b.textContent = 'Açılıyor…'; enablePush(); return; }
   if (d.act === 'pushOff'){ disablePush(); return; }
   if (d.act === 'pushTest'){ pushApi('test', {device_id:deviceId()}).then(r => toast(r && r.result === 'ok' ? 'Deneme bildirimi gönderildi' : 'Gönderilemedi, bildirimleri kapatıp yeniden aç')).catch(() => toast('İnternet bağlantını kontrol et')); return; }
+  if (d.act === 'mic'){ toggleMic(); return; }
+  if (d.act === 'voiceToggle'){ voiceOn = !voiceOn; lsSet('cepkocum-voice', voiceOn ? 'on' : 'off'); if (!voiceOn && window.speechSynthesis) speechSynthesis.cancel(); else speak('Sesli cevap açık.'); renderCoach(); return; }
+  if (d.act === 'phoneAllow'){ phonePull(true); return; }
   if (d.delmem !== undefined){ state.mem.splice(+d.delmem, 1); save(); render(); return; }
   if (d.act === 'reset'){ confirmReset = true; render(); return; }
   if (d.act === 'resetNo'){ confirmReset = false; render(); return; }
