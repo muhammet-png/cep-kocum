@@ -1427,7 +1427,7 @@ function renderTabs(){
 }
 function renderHeader(){
   const d = new Date(), k = todayKey(), w = SCHEDULE[d.getDay()];
-  document.getElementById('hdrSub').textContent = 'Hafta '+weekOf(k)+' · '+(w ? WORKOUTS[w].name+(isDeload(k)?' (hafif)':'') : 'Dinlenme günü');
+  document.getElementById('hdrSub').textContent = k < state.start ? 'Başlamaya ' + daysBetween(k, state.start) + ' gün' : 'Hafta '+weekOf(k)+' · '+(w ? WORKOUTS[w].name+(isDeload(k)?' (hafif)':'') : 'Dinlenme günü');
   renderSess();
   document.getElementById('hdrDay').textContent = DAYNAMES[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];
 }
@@ -1463,8 +1463,21 @@ function heroHTML(k, plan){
 }
 
 let settingsOpen = false, confirmReset = false;
+/* before the chosen start date: a countdown and the get-ready list, no tasks, no alerts */
+function preStartHTML(k){
+  const left = daysBetween(k, state.start), sw = SCHEDULE[parseKey(state.start).getDay()];
+  return `<div class="hero"><div class="eyebrow"><span>PROGRAM BAŞLIYOR</span><b>${left} gün kaldı</b></div><h3>${dLong(state.start)}</h3>
+    <p class="sub">İlk gün ${sw ? WORKOUTS[sw].name + ' antrenmanı, saat ' + state.settings.workout : 'dinlenme günü: 40–50 dakika eğimli yürüyüş'}. O sabah ${state.settings.wake}’de ilk bildirimin gelir. Tarihi Ayarlar’dan değiştirebilirsin.</p></div>
+    <h2>Başlamadan hazırla</h2><div class="card"><ul class="clean small">
+    <li>Kreatin monohidrat, whey protein ve magnezyum glisinat al.</li>
+    <li>Blender veya shaker, baskül, terzi metresi ve 5 yemek saklama kabı hazırla.</li>
+    <li>Spor salonuna kaydol: barfiks barı, bench sehpası ve squat rack olsun.</li>
+    <li>Uygulamayı ana ekrana ekle ve bildirimleri aç.</li>
+    <li>İlk gün sabah aç karnına kilo ve belini ölç, ön-yan-arka fotoğrafını çek.</li></ul></div>`;
+}
 function renderToday(){
   const k = todayKey(), plan = dayPlan(k), t = dayTotals(k), now = nowHM();
+  if (k < state.start){ view.innerHTML = preStartHTML(k) + pushCardHTML() + measureCardHTML() + settingsHTML() + watchHTML(); return; }
   let html = heroHTML(k, plan) + pushCardHTML();
   const pP = Math.min(1, t.p/PROFILE.protein), pW = Math.min(1, t.water/PROFILE.su), pD = t.total ? t.done/t.total : 0;
   const pK = Math.min(1, t.kcal/state.kcal), overK = t.kcal > state.kcal + 100;
@@ -1494,6 +1507,29 @@ function renderToday(){
   html += settingsHTML() + watchHTML();
   view.innerHTML = html;
 }
+/* start date: the first time the user sets it, it applies at once; every later change asks twice */
+let startStep = 0, pendingStart = null;
+const dLong = d => { const x = parseKey(d); return x.getDate() + ' ' + MONTHS[x.getMonth()] + ' ' + x.getFullYear() + ' ' + DAYNAMES[x.getDay()]; };
+function startDateHTML(){
+  const k = todayKey(), pre = k < state.start;
+  let h = `<div><p class="muted small" style="font-weight:700;margin-bottom:6px">Spora başlama tarihi</p>
+    <div class="row" style="align-items:flex-end"><label class="f">Başlangıç<input type="date" id="startIn" value="${state.start}" min="${addDays(k, -90)}" max="${addDays(k, 365)}"></label><button type="button" class="btn" data-act="startSave">${state.startLocked ? 'Değiştir' : 'Kaydet'}</button></div>
+    <p class="muted small" style="margin-top:6px">${pre ? 'Programın ' + dLong(state.start) + ' başlıyor. O güne kadar görev ve bildirim gelmez.' : 'Program, hafta sayısı, hedef takvimi ve bildirimler bu tarihten başlar.'}</p>
+    <p id="startErr" class="small" style="color:var(--red);margin-top:4px" hidden></p>`;
+  if (startStep === 1) h += `<div class="confirm">Başlangıç tarihini <b>${dLong(pendingStart)}</b> yapacaksın. Hafta sayısı, hedef takvimi, ağırlık önerileri ve bildirimler bu tarihe göre yeniden kurulur. Devam edilsin mi?
+      <div class="row" style="margin-top:8px"><button type="button" class="btn primary" data-act="startNext">Devam</button><button type="button" class="btn" data-act="startNo">Vazgeç</button></div></div>`;
+  if (startStep === 2) h += `<div class="confirm">Son kez soruyorum: başlangıç <b>${dLong(pendingStart)}</b> olsun mu? Bu tarihten önceki günler hedefe sayılmaz.
+      <div class="row" style="margin-top:8px"><button type="button" class="btn" data-act="startYes" style="background:var(--red);color:var(--on-accent);border-color:var(--red)">Evet, değiştir</button><button type="button" class="btn" data-act="startNo">Vazgeç</button></div></div>`;
+  return h + `</div>`;
+}
+function applyStart(d){
+  const old = state.start;
+  state.start = d; state.startHM = d === todayKey() ? nowHM() : '00:00'; state.startLocked = true;
+  if (state.measurements.length === 1 && state.measurements[0].d === old) state.measurements[0].d = d;
+  startStep = 0; pendingStart = null; pickedWorkout = null;
+  save(); pushSync(); render();
+  toast(d > todayKey() ? 'Programın ' + dLong(d) + ' başlıyor' : 'Başlangıç ' + dShort(d) + ' olarak ayarlandı');
+}
 function settingsHTML(){
   const s = state.settings;
   return `<h2>Ayarlar</h2><details class="card" id="settingsBox" ${settingsOpen?'open':''}><summary style="cursor:pointer;font-weight:700;list-style:none">Saatlerim, görünüm, bildirimler ve bilgilerim</summary><div class="stack" style="margin-top:12px">
@@ -1507,6 +1543,7 @@ function settingsHTML(){
       <label class="f">Yürüyüş<input type="time" id="setWalk" value="${s.walk}"></label>
       <label class="f">Yatış<input type="time" id="setSleep" value="${s.sleep}"></label></div>
     <p class="muted small">Bütün plan ve bildirimler bu saatlere göre kurulur. Değiştirdiğinde bildirimler de kendiliğinden yeni saate geçer.</p>
+    ${startDateHTML()}
     <p class="muted small">Başlangıç ${esc(state.start.split('-').reverse().join('.'))} · 168 cm · 69 kg · bel 87,5 cm · hedef bel ~77 cm · günlük ${state.kcal} kcal, ${PROFILE.protein} g protein.</p>
     ${backupHTML()}
     ${confirmReset
@@ -1541,7 +1578,7 @@ function renderWorkout(){
     <li><b>Bitirince</b> en alttaki “Antrenmanı bitir” düğmesine bas ve nasıl geçtiğini seç.</li></ol></details>`;
   const todays = SCHEDULE[dow];
   /* rest day: today's job is the walk; the next workout is only a preview, never shown as today's */
-  if (!todays && !pickedWorkout && !(l && l.w) && !missedWorkout()){
+  if (k >= state.start && !todays && !pickedWorkout && !(l && l.w) && !missedWorkout()){
     const nk = nextWorkoutKey(dow), walked = l && l.c && l.c.yuruyus, walking = state.sess && state.sess.kind === 'walk';
     const guide = html.replace('style="margin-top:14px" open>', 'style="margin-top:14px">');
     html = `<div class="card" style="margin-top:14px"><span class="pill p-green">Bugün · ${DAYNAMES[dow]}</span><h3 style="margin-top:8px">Dinlenme günü: eğimli yürüyüş</h3>
@@ -1556,12 +1593,13 @@ function renderWorkout(){
   }
   /* today's job: the workout already started today, else the scheduled one, else yesterday's missed one.
      Any other workout is a read-only preview until the user chooses to do it today. */
-  const mw = missedWorkout(), todayJob = (l && l.w && l.w.key) || todays || mw || null, preview = wkey !== todayJob;
+  const prestart = k < state.start, mw = missedWorkout();
+  const todayJob = prestart ? null : (l && l.w && l.w.key) || todays || mw || null, preview = wkey !== todayJob;
   if (preview){
     const started = l && l.w && l.w.ex && Object.keys(l.w.ex).length;
     html += `<div class="card" style="margin-top:12px"><span class="pill p-blue">Önizleme</span><h3 style="margin-top:8px">${esc(W.day)} · ${esc(W.name)} antrenmanı</h3>
-      <p class="muted small" style="margin-top:4px">Bugün ${DAYNAMES[dow]}${todayJob ? ', bugünkü antrenmanın ' + esc(WORKOUTS[todayJob].name) : ', dinlenme günün'}. Burada sadece hareketlere ve ağırlıklara bakıyorsun, kayıt girilmez.</p>
-      <div class="row" style="margin-top:10px"><button type="button" class="btn" data-act="unpick">← Bugüne dön</button>${started ? '' : `<button type="button" class="btn primary" data-act="doToday">Bunu bugün yap</button>`}</div></div>`;
+      <p class="muted small" style="margin-top:4px">${prestart ? 'Programın ' + dLong(state.start) + ' başlıyor. Şimdilik hareketlere ve başlangıç ağırlıklarına bakabilirsin.' : 'Bugün ' + DAYNAMES[dow] + (todayJob ? ', bugünkü antrenmanın ' + esc(WORKOUTS[todayJob].name) : ', dinlenme günün') + '. Burada sadece hareketlere ve ağırlıklara bakıyorsun, kayıt girilmez.'}</p>
+      <div class="row" style="margin-top:10px">${prestart ? '' : `<button type="button" class="btn" data-act="unpick">← Bugüne dön</button>`}${started || prestart ? '' : `<button type="button" class="btn primary" data-act="doToday">Bunu bugün yap</button>`}</div></div>`;
   } else if (!todays && mw === wkey && !(l && l.w)){
     html += `<div class="card" style="margin-top:12px"><h3>Bugün kaçırdığın antrenmanı yap</h3><p class="muted small" style="margin-top:4px">Dünkü ${WORKOUTS[mw].name} yapılmadı. Bugün onu yap, kayıt bugüne yazılır.</p></div>`;
   }
@@ -1886,7 +1924,7 @@ function contextText(recentDays){
   for (let i = recentDays - 1; i >= 0; i--){ const d = addDays(k, -i); if (d >= state.start) lines.push(dayLine(d)); }
   const plan = dayPlan(k).map(it => it.t+' '+it.title+(isDone(k, it) ? ' ✓' : '')).join('; ');
   return 'KULLANICI: 168 cm, başlangıç 69 kg, bel 87,5 cm. Spora sıfırdan başladı, hiç bilgisi yok. Eşiyle birlikte çalışıyor, zamanı kısıtlı. Sabahları dinç kalkamıyor. Hedef: Tom Holland gibi kuru ve atletik görünüm, bel ~77 cm.\n'
-   + 'ŞU AN: '+DAYNAMES[dow]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]+' '+dt.getFullYear()+', saat '+nowHM()+'. Programın '+(daysBetween(state.start, k)+1)+'. günü, '+weekOf(k)+'. hafta'+(isDeload(k)?' (hafif hafta)':'')+'. Hedef takviminde '+completedDays()+'/'+GOAL_DAYS+' tam gün.\n'
+   + 'ŞU AN: '+DAYNAMES[dow]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]+' '+dt.getFullYear()+', saat '+nowHM()+'. '+(k < state.start ? 'Program henüz başlamadı: başlangıç '+dLong(state.start)+' ('+daysBetween(k, state.start)+' gün sonra). Bugünkü plan sadece bilgi içindir.' : 'Programın '+(daysBetween(state.start, k)+1)+'. günü, '+weekOf(k)+'. hafta'+(isDeload(k)?' (hafif hafta)':'')+'. Hedef takviminde '+completedDays()+'/'+GOAL_DAYS+' tam gün.')+'\n'
    + 'BUGÜN: '+(SCHEDULE[dow] ? 'antrenman günü. Bugünkü ağırlıklar: '+workoutBrief(k) : 'dinlenme günü, ağırlık yok; 40-50 dk eğimli yürüyüş.')+'\n'
    + 'BUGÜNÜN PLANI (✓ = yaptı): '+plan+'\n'
    + 'YARIN: '+DAYNAMES[tdow]+', '+(SCHEDULE[tdow] ? WORKOUTS[SCHEDULE[tdow]].name+' antrenmanı saat '+state.settings.workout : 'dinlenme + yürüyüş')+'.\n'
@@ -2029,7 +2067,8 @@ document.getElementById('alertLater').onclick = () => { if (alertItem) snoozes.p
 document.getElementById('alertClose').onclick = hideAlert;
 function checkAlerts(hm){
   if (document.visibilityState !== 'visible') return; /* closed or locked: the push notification covers it */
-  const k = todayKey(), plan = dayPlan(k);
+  const k = todayKey(); if (k < state.start) return; /* program not started yet */
+  const plan = dayPlan(k);
   const due = plan.filter(it => it.t === hm && !isDone(k, it));
   snoozes = snoozes.filter(s => { if (s.at === hm){ const it = plan.find(x => x.id === s.id); if (it && !isDone(k, it) && !due.includes(it)) due.push(it); return false; } return true; });
   due.forEach(it => { if (!alertQueue.some(a => a.id === it.id) && !(alertItem && alertItem.id === it.id)) alertQueue.push(it); });
@@ -2108,6 +2147,16 @@ document.addEventListener('click', e => {
   if (d.ans){ const [id,key,i] = d.ans.split('|'), l = dayLog(k); if (l.q[key] === +i) delete l.q[key]; else l.q[key] = +i; save(); render(); return; }
   if (d.water){ const l = dayLog(k); l.water = Math.min(6000, l.water + (+d.water)); if (l.water >= 1000) l.c.su = true; if (l.water >= 2000) l.c.su2 = true; save(); render(); return; }
   if (d.pick){ pickedWorkout = d.pick; render(); window.scrollTo(0, 0); return; }
+  if (d.act === 'startSave'){
+    const v = (document.getElementById('startIn') || {}).value, er = document.getElementById('startErr');
+    if (!v || v < addDays(k, -90) || v > addDays(k, 365)){ if (er){ er.textContent = 'Geçerli bir tarih seç (en fazla 90 gün geri, 1 yıl ileri).'; er.hidden = false; } return; }
+    if (v === state.start){ if (er){ er.textContent = 'Başlangıç zaten bu tarih.'; er.hidden = false; } return; }
+    if (!state.startLocked) return applyStart(v);
+    pendingStart = v; startStep = 1; render(); return;
+  }
+  if (d.act === 'startNext'){ startStep = 2; render(); return; }
+  if (d.act === 'startYes'){ if (pendingStart) applyStart(pendingStart); return; }
+  if (d.act === 'startNo'){ startStep = 0; pendingStart = null; render(); return; }
   if (d.act === 'unpick'){ pickedWorkout = null; render(); window.scrollTo(0, 0); return; }
   if (d.act === 'doToday'){ const l = dayLog(k), wk = currentWorkoutKey(); if (!(l.w && l.w.ex && Object.keys(l.w.ex).length)){ ensureWorkout(l, wk); save(); toast(WORKOUTS[wk].name + ' bugünün antrenmanı oldu'); } render(); window.scrollTo(0, 0); return; }
   if (d.act === 'walkStart'){ if (state.sess) sessTap(); else sessAction('walk'); return; }
