@@ -1157,33 +1157,30 @@ async function renderPhotos(){
   const box = document.getElementById('photoBox'); if (!box) return;
   let all;
   try { all = await PDB.all(); } catch(e){ box.innerHTML = '<p class="muted small">Bu tarayıcı fotoğraf saklamaya izin vermiyor. Uygulamayı telefona kurduğunda çalışır.</p>'; return; }
-  const k = todayKey(), days = [...new Set(all.map(p => p.d).concat(k))].sort().reverse();
-  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Bir tarihe dokun, fotoğraflar açılır; eklemeyi de o tarihin içinden yap.</p>`;
-  h += `<div class="pdays" role="list" style="margin-top:10px">${days.map(d => { const dt = parseKey(d), n = all.filter(p => p.d === d).length;
-    return `<button type="button" role="listitem" class="pday${d === k ? ' today' : ''}" data-pday="${d}" aria-label="${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${n} fotoğraf"><b>${dt.getDate()}</b><span>${d === k ? 'Bugün' : MONTHS[dt.getMonth()].slice(0,3)}</span><small>${n ? n + ' foto' : 'ekle +'}</small></button>`; }).join('')}</div>`;
+  photoUrls.forEach(u => URL.revokeObjectURL(u)); photoUrls = [];
+  const url = b => { const u = URL.createObjectURL(b); photoUrls.push(u); return u; };
+  const k = todayKey(), days = [...new Set(all.map(p => p.d))].sort();
+  let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Tarihi seç, o günün fotoğrafları açılır; eklemeyi de o tarihin içinden yap.</p>
+    <div class="row" style="align-items:flex-end;margin-top:10px;flex-wrap:nowrap"><label class="f" style="flex:1;min-width:0">Tarih<input type="date" id="photoDate" value="${photoOpen || k}" max="${k}" style="width:100%;box-sizing:border-box"></label>
+    <button type="button" class="btn ${photoOpen ? '' : 'primary'}" data-act="${photoOpen ? 'photoClose' : 'photoShow'}">${photoOpen ? 'Kapat' : 'Aç'}</button></div>
+    <p class="muted small" style="margin-top:6px">${days.length ? days.length + ' günde fotoğraf var · ilk ' + dShort(days[0]) + (days.length > 1 ? ' · son ' + dShort(days[days.length - 1]) : '') : 'Henüz fotoğraf yok.'}</p>`;
+  if (photoOpen){
+    const d = photoOpen, dt = parseKey(d), nDay = daysBetween(state.start, d) + 1;
+    const list = all.filter(p => p.d === d).sort((a,b) => Object.keys(POSES).indexOf(a.pose) - Object.keys(POSES).indexOf(b.pose) || String(a.id).localeCompare(String(b.id)));
+    h += `<div class="pdaybox"><div class="row" style="justify-content:space-between;align-items:baseline"><h3>${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}</h3><span class="muted small">${DAYNAMES[dt.getDay()]}${nDay > 0 ? ' · ' + nDay + '. gün' : ''}</span></div>`;
+    h += list.length
+      ? `<div class="pgrid">${list.map(p => `<figure><button type="button" class="pimg" data-pbig="${p.id}"><img src="${url(p.blob)}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}"></button><figcaption>${POSES[p.pose]}${photoDel === p.id
+          ? ` <span class="pconf"><button type="button" class="link" data-act="pdelYes" style="color:var(--red)">Sil</button><button type="button" class="link" data-act="pdelNo">Vazgeç</button></span>`
+          : `<button type="button" class="thx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button>`}</figcaption></figure>`).join('')}</div>`
+      : `<p class="muted small" style="margin-top:10px">Bu tarihte fotoğraf yok.</p>`;
+    h += `<p class="small" style="margin-top:12px;font-weight:700">Bu tarihe fotoğraf ekle</p><div class="row padd" style="margin-top:6px">${Object.keys(POSES).map(p => `<label class="btn"><span>+ ${POSES[p]}</span><input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden></label>`).join('')}</div></div>`;
+  }
   const pairs = Object.keys(POSES).filter(p => all.filter(x => x.pose === p).length >= 2);
   if (pairs.length){
     h += `<p class="small" style="margin-top:14px;font-weight:700">Koçum incelesin: değişim var mı?</p><div class="row" style="margin-top:6px">${pairs.map(p => `<button type="button" class="btn" data-photoai="${p}">${POSES[p]}</button>`).join('')}</div><div id="photoAI" class="small" style="white-space:pre-wrap;margin-top:8px"></div>`;
   }
   h += `<p class="muted small" style="margin-top:10px">Fotoğraflar sadece bu cihazda saklanır. Yalnızca koça incelettiğinde Claude’a gönderilir.</p>`;
   box.innerHTML = h;
-}
-async function openPhotoDay(d){
-  let all; try { all = await PDB.all(); } catch(e){ return; }
-  photoUrls.forEach(u => URL.revokeObjectURL(u)); photoUrls = [];
-  const url = b => { const u = URL.createObjectURL(b); photoUrls.push(u); return u; };
-  const dt = parseKey(d), list = all.filter(p => p.d === d).sort((a,b) => Object.keys(POSES).indexOf(a.pose) - Object.keys(POSES).indexOf(b.pose) || String(a.id).localeCompare(String(b.id)));
-  const nDay = daysBetween(state.start, d) + 1;
-  let h = `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;margin-top:0"><div style="min-width:0"><h3>${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}</h3><p class="muted small">${DAYNAMES[dt.getDay()]}${nDay > 0 ? ' · ' + nDay + '. gün' : ''}</p></div><button type="button" class="iconbtn" data-act="photoClose" aria-label="Kapat">${'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'}</button></div>`;
-  h += list.length
-    ? `<div class="pgrid" style="margin-top:12px">${list.map(p => `<figure><button type="button" class="pimg" data-pbig="${p.id}"><img src="${url(p.blob)}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}"></button><figcaption>${POSES[p.pose]}${photoDel === p.id
-        ? ` <span class="pconf"><button type="button" class="link" data-act="pdelYes" style="color:var(--red)">Sil</button><button type="button" class="link" data-act="pdelNo">Vazgeç</button></span>`
-        : `<button type="button" class="thx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button>`}</figcaption></figure>`).join('')}</div>`
-    : `<p class="muted small" style="margin-top:12px;text-align:center;padding:14px 0">Bu tarihte fotoğraf yok.</p>`;
-  if (d <= todayKey()) h += `<p class="small" style="margin-top:14px;font-weight:700">Bu tarihe fotoğraf ekle</p><div class="row padd" style="margin-top:6px">${Object.keys(POSES).map(p => `<label class="btn"><span>+ ${POSES[p]}</span><input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden></label>`).join('')}</div>`;
-  photoOpen = d;
-  openSheet(h);
-  const s = document.querySelector('#sheetBg .sheet'); if (s) s.classList.add('photosheet');
 }
 async function addPhoto(file, pose, d){
   try {
@@ -1192,7 +1189,7 @@ async function addPhoto(file, pose, d){
     if (d === todayKey()){ const l = dayLog(d); l.c.foto = true; save(); }
     toast(POSES[pose] + ' fotoğrafı eklendi');
   } catch(e){ toast(e && e.message ? e.message : 'Fotoğraf eklenemedi'); }
-  renderPhotos(); openPhotoDay(d);
+  renderPhotos();
 }
 async function analyzePhotos(btn){
   const out = document.getElementById('photoAI');
@@ -2242,12 +2239,13 @@ document.addEventListener('click', e => {
   if (d.themeSet){ setTheme(d.themeSet); return; }
   if (d.alarmSet){ lsSet('cepkocum-alarm', d.alarmSet); render(); if (d.alarmSet === 'on') beep(); toast('Alarm sesi ' + (d.alarmSet === 'on' ? 'açık' : 'kapalı')); return; }
   if (d.pose){ photoPose = d.pose; photoDel = null; renderPhotos(); return; }
-  if (d.pday){ photoDel = null; openPhotoDay(d.pday); return; }
-  if (d.pbig){ const img = b.querySelector('img'); if (img){ const back = photoOpen; openSheet(`<img src="${img.src}" alt="${esc(img.alt)}" style="width:100%;max-height:72vh;object-fit:contain;border-radius:12px;display:block"><p class="muted small" style="margin-top:8px;text-align:center">${esc(img.alt)}</p><div class="row"><button type="button" class="btn" data-pday="${back}">← Geri</button><button type="button" class="btn primary" data-act="photoClose">Kapat</button></div>`); photoOpen = back; } return; }
-  if (d.act === 'photoClose'){ photoOpen = null; photoDel = null; closeSheet(); return; }
-  if (d.pdel){ photoDel = d.pdel; openPhotoDay(photoOpen); return; }
-  if (d.act === 'pdelNo'){ photoDel = null; openPhotoDay(photoOpen); return; }
-  if (d.act === 'pdelYes'){ const id = photoDel; photoDel = null; PDB.del(id).then(() => { renderPhotos(); openPhotoDay(photoOpen); toast('Fotoğraf silindi'); }).catch(() => toast('Silinemedi')); return; }
+  /* photos: pick a date, that day's photos open in the card; Kapat closes them */
+  if (d.act === 'photoShow'){ const v = (document.getElementById('photoDate') || {}).value || k; photoOpen = v > k ? k : v; photoDel = null; renderPhotos(); return; }
+  if (d.act === 'photoClose'){ photoOpen = null; photoDel = null; renderPhotos(); return; }
+  if (d.pbig){ const img = b.querySelector('img'); if (img) openSheet(`<img src="${img.src}" alt="${esc(img.alt)}" style="width:100%;max-height:72vh;object-fit:contain;border-radius:12px;display:block"><p class="muted small" style="margin-top:8px;text-align:center">${esc(img.alt)}</p><div class="row"><button type="button" class="btn primary" data-sess="cancel">Kapat</button></div>`); return; }
+  if (d.pdel){ photoDel = d.pdel; renderPhotos(); return; }
+  if (d.act === 'pdelNo'){ photoDel = null; renderPhotos(); return; }
+  if (d.act === 'pdelYes'){ const id = photoDel; photoDel = null; PDB.del(id).then(() => { renderPhotos(); toast('Fotoğraf silindi'); }).catch(() => toast('Silinemedi')); return; }
   if (d.photoai){ photoPose = d.photoai; analyzePhotos(b); return; }
   if (d.act === 'backup'){ exportBackup(); return; }
   if (d.act === 'importYes'){ state = merge(pendingImport); pendingImport = null; save(); render(); toast('Yedek yüklendi'); return; }
@@ -2302,6 +2300,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   const el = e.target;
+  if (el.id === 'photoDate'){ const k = todayKey(); if (el.value){ photoOpen = el.value > k ? k : el.value; photoDel = null; renderPhotos(); } return; }
   if (el.classList && el.classList.contains('photoIn')){ const f = el.files && el.files[0]; if (f && photoOpen) addPhoto(f, el.dataset.pose, photoOpen); el.value = ''; return; }
   if (el.id === 'importIn'){
     const f = el.files && el.files[0]; el.value = '';
