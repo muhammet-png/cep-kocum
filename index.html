@@ -1188,11 +1188,13 @@ async function renderPhotos(){
   slotUrls.forEach(u => URL.revokeObjectURL(u)); slotUrls = [];
   let h = `<p class="muted small">2 haftada bir pazartesi sabahı çek: aynı yer, aynı ışık, şortla, aç karnına. Her gün için ön, yan ve arka olmak üzere 3 fotoğraf.</p>`;
   /* one slot per pose: empty shows the pose name and +, a chosen photo fills the whole slot */
-  h += `<p class="small" style="margin-top:12px;font-weight:700">Bugün ekle</p><div class="pslots">${Object.keys(POSES).map(p => {
-    const st = photoStage.find(x => x.pose === p), saved = all.find(x => x.d === k && x.pose === p);
+  /* poses already saved today leave the add area; once all three are saved it disappears and only the date picker stays */
+  const openPoses = Object.keys(POSES).filter(p => !all.some(x => x.d === k && x.pose === p));
+  if (openPoses.length) h += `<p class="small" style="margin-top:12px;font-weight:700">Bugün ekle</p><div class="pslots">${openPoses.map(p => {
+    const st = photoStage.find(x => x.pose === p);
     if (st) return `<div class="pslot filled"><img src="${st.url}" alt="${POSES[p]} (kaydedilmedi)"><button type="button" class="pdelx" data-unstage="${st.id}" aria-label="${POSES[p]} fotoğrafını çıkar">×</button></div>`;
-    if (saved){ const u = URL.createObjectURL(saved.blob); slotUrls.push(u); return `<div class="pslot filled"><img src="${u}" alt="${POSES[p]} (kaydedildi)"><span class="psaved">✓</span></div>`; }
     return `<label class="pslot empty"><span>${POSES[p]}</span><b>+</b><input type="file" accept="image/*" class="photoIn" data-pose="${p}" hidden></label>`; }).join('')}</div>`;
+  else h += `<p class="small" style="margin-top:12px;color:var(--green);font-weight:700">Bugünün 3 fotoğrafı kaydedildi ✓ Görmek için aşağıdan tarihi seç.</p>`;
   if (photoStage.length) h += `<button type="button" class="btn primary full" data-act="photoSave" style="margin-top:10px">Kaydet (${photoStage.length} fotoğraf)</button>`;
   h += `<p class="small" style="margin-top:16px;font-weight:700">Fotoğraflarına bak</p>
     <label class="f" style="margin-top:6px;display:block">Tarih seç<input type="date" id="photoDate" value="" max="${k}" style="width:100%;box-sizing:border-box"></label>
