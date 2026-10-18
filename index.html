@@ -118,12 +118,6 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 
-/* setup checklist */
-.setup .ck{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
-.setup .ck:first-of-type{border-top:0}
-.setup .ck input{width:22px;height:22px;accent-color:var(--green);flex:0 0 auto;margin-top:1px}
-.setup .ck.got h3{text-decoration:line-through;color:var(--muted)}
-.setup .ck p{font-size:12.5px;color:var(--muted);margin-top:2px}
 
 /* workout */
 .wtabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
@@ -136,7 +130,23 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .ex-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .ex-head h3{font-size:16px}
 .ex-head .num{font-family:var(--display);font-weight:600;color:var(--muted);font-size:15px;white-space:nowrap}
-.themebtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:18px;line-height:1;cursor:pointer;padding:0;color:var(--fg)}
+.themebtn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;padding:0;color:var(--fg);display:grid;place-items:center;flex:0 0 auto;transition:background .15s}
+.themebtn:active{transform:scale(.94)}
+.themebtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.themebtn svg .fillc{fill:currentColor;stroke:none}
+/* header workout stopwatch: idle shows 00:00, tap to start / finish */
+.sess{background:none;border:0;padding:0;color:inherit;cursor:pointer;display:block}
+.sess-t{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
+.sess-ic{width:0;height:0;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--muted);flex:0 0 auto}
+.sess.on .sess-t{color:var(--red)}
+.sess.on .sess-ic{width:9px;height:9px;border:0;border-radius:50%;background:var(--red);animation:sesspulse 1.4s ease-in-out infinite}
+@keyframes sesspulse{50%{opacity:.25}}
+.sheetbg{position:fixed;inset:0;background:rgba(10,14,20,.55);display:flex;align-items:flex-end;justify-content:center;z-index:60;padding:0 max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--surface);color:var(--fg);border-radius:20px;width:100%;max-width:420px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sheet h3{font-size:20px}
+.sheet .big{font-family:var(--display);font-size:44px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1;margin:8px 0 2px}
+.sheet .row{margin-top:16px;flex-wrap:nowrap}
+.sheet .row .btn{flex:1}
 .seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 4px;font-weight:700;font-size:13px;cursor:pointer}
 .seg button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
@@ -163,8 +173,14 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 @media (max-width:380px){.rir{margin-left:0}}
 .journey{margin-top:12px}
 .jrow{display:flex;gap:14px;align-items:center}
-.jfig{flex:0 0 auto;width:78px;height:110px}
-.b-mark{stroke:var(--fg);stroke-width:.8;stroke-dasharray:2 2;opacity:.45}
+.jfig{flex:0 0 auto;width:78px;height:130px}
+.b-mark{stroke:var(--muted);stroke-width:1.2}
+.b-axis{stroke:var(--line);stroke-width:1}
+.b-tick{fill:var(--muted);font:700 8px var(--body)}
+.b-line{fill:none;stroke:var(--fg);stroke-opacity:.22;stroke-width:.8}
+.b-detail{fill:none;stroke:var(--fg);stroke-opacity:.14;stroke-width:.9;stroke-linecap:round}
+.b-level{fill:#fff;opacity:.55}
+.bg-a{stop-color:var(--green)} .bg-b{stop-color:#3ccf9a}
 .milestones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
 .milestones div{background:var(--surface-2);border-radius:10px;padding:8px;font-size:12px;line-height:1.3}
 .milestones div.got{background:var(--green-soft);color:var(--green)}
@@ -182,7 +198,7 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .cal .cd.today{background:var(--surface);color:var(--fg)}
 .cal .cd.future,.cal .cd.none{background:transparent;color:var(--muted);opacity:.6}
 .cal .cd.is-today{outline:2px solid var(--fg);outline-offset:-2px}
-@media (max-width:340px){.jfig{width:64px;height:90px}.jbig{font-size:32px}}
+@media (max-width:340px){.jfig{width:66px;height:110px}.jbig{font-size:32px}}
 .phase .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:10px}
 .phase .steps span{font-size:11px;font-weight:700;text-align:center;padding:6px 2px;border-radius:8px;background:var(--surface-2);color:var(--muted);line-height:1.25}
 .phase .steps span.cur{background:var(--fg);color:var(--bg)}
@@ -245,6 +261,13 @@ ul.clean,ol.clean{margin:0;padding-left:20px} ul.clean li,ol.clean li{margin:5px
 .bub.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
 .composer{display:flex;gap:8px;margin-top:12px}
 .composer textarea{flex:1;resize:none;height:46px}
+.composer input{flex:1;min-width:0}
+a.btn,a.chip{text-decoration:none;color:inherit;display:inline-flex;align-items:center;justify-content:center;text-align:center}
+a.btn.primary{color:var(--bg)}
+.talk a.btn.full{display:flex;min-height:52px;font-size:16px}
+.memlist{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.memlist li{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px;font-size:14px}
+.memlist li span{min-width:0;overflow-wrap:anywhere}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer}
 
@@ -378,7 +401,7 @@ h3,p,li,.stat span,.note span{overflow-wrap:anywhere}
 <div class="wrap">
   <header class="top">
     <div class="brandwrap"><svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect x="2" y="21" width="44" height="6" rx="3" class="lg-bar"/><circle cx="24" cy="24" r="17" class="lg-plate"/><circle cx="24" cy="24" r="11.5" class="lg-ring"/><circle cx="24" cy="24" r="4.5" class="lg-hub"/></svg><div class="brand">Cep Koçum<small id="hdrSub">Hafta 1</small></div></div>
-    <div class="row" style="flex-wrap:nowrap;gap:10px"><button type="button" class="themebtn" id="themeBtn" aria-label="Görünüm: otomatik">◐</button><div class="clock" id="hdrClock">--:--<small id="hdrDay">Bugün</small></div></div>
+    <div class="row" style="flex-wrap:nowrap;gap:10px"><button type="button" class="themebtn" id="themeBtn" aria-label="Görünüm: otomatik"></button><button type="button" class="clock sess" id="hdrClock" aria-label="Antrenman sayacı"><span class="sess-t"><i class="sess-ic" aria-hidden="true"></i><span id="sessT">00:00</span></span><small id="hdrDay">Bugün</small></button></div>
   </header>
   <main id="view"><p class="muted" style="margin-top:20px">Yükleniyor…</p></main>
 </div>
@@ -439,17 +462,7 @@ const SCHEDULE = {2:'UA',3:'LA',5:'UB',6:'LB'};
 const CAT = {train:'var(--blue)',meal:'var(--yellow)',supp:'var(--green)',sleep:'var(--muted)',track:'var(--red)'};
 const SLEEP_H = [5,6,7,8];
 
-const SETUP = [
-  {id:'kreatin', t:'Kreatin monohidrat al', d:'Saf “creatine monohydrate”, 300 g paket (2 ay yeter). Aromasız olsun.'},
-  {id:'whey', t:'Whey protein al', d:'1 ölçekte 20–25 g protein olan sade bir whey. 1 kg ile başla.'},
-  {id:'magnezyum', t:'Magnezyum glisinat al', d:'“Magnesium bisglycinate”. Etikette tablet başına 100–200 mg elemental magnezyum yazsın.'},
-  {id:'shaker', t:'Blender veya shaker hazırla', d:'Muzlu shake için küçük bir blender en pratiği.'},
-  {id:'tarti', t:'Baskül ve terzi metresi al', d:'Kilo ve bel ölçümü için. Pazartesi sabahları kullanacaksın.'},
-  {id:'kap', t:'5 adet yemek saklama kabı al', d:'Pazar günü öğle yemeklerini bunlara koyacaksın.'},
-  {id:'salon', t:'Spor salonuna kaydol', d:'İlk antrenman salı. Salonda barfiks barı, bench sehpası ve squat rack olsun.'},
-  {id:'bildirim', t:'Uygulamayı telefona kur ve bildirimleri aç', d:'Safari’de muhammet-png.github.io/cep-kocum aç → Paylaş → Ana Ekrana Ekle. Ana ekrandaki ikondan aç, “Bildirimleri aç”a bas. Hatırlatmaları uygulama kendisi gönderir.'},
-  {id:'tahlil', t:'Bu ay kan tahlili yaptır', d:'Ferritin, B12, D vitamini, TSH ve hemogram. Sonuçları koçuna yaz.'}
-];
+
 
 /* =========================================================
    HELPERS
@@ -480,14 +493,14 @@ function defaultState(){
   const t = todayKey();
   return {v:3, start:t, startHM:nowHM(), settings:{wake:'07:00', breakfast:'07:30', workout:'19:00', walk:'18:30', sleep:'23:00'},
     kcal:1850, lastAdjust:null, notes:[], measurements:[{d:t, kg:PROFILE.kilo, bel:PROFILE.bel}],
-    logs:{}, shop:{}, setup:{}, chat:[]};
+    logs:{}, shop:{}, setup:{}, chat:[], mem:[]};
 }
 function merge(data){
   data = data ? JSON.parse(JSON.stringify(data)) : {};
   const s = Object.assign(defaultState(), data);
   s.settings = Object.assign(defaultState().settings, data.settings || {});
   ['logs','shop','setup'].forEach(k => { if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {}; });
-  ['notes','measurements','chat'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ['notes','measurements','chat','mem'].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
   if (!s.measurements.length) s.measurements = [{d:s.start, kg:PROFILE.kilo, bel:PROFILE.bel}];
   if (!data.startHM) s.startHM = s.start === todayKey() ? nowHM() : '00:00';
   if (!data.v || data.v < 3){ if (s.kcal === 2000) s.kcal = 1850; s.v = 3; } /* fast scenario */
@@ -512,7 +525,10 @@ async function flush(){
   const t = lsGet('cepkocum-tab'); if (t && ['today','workout','food','progress','coach'].includes(t)) tab = t;
 })();
 /* theme: auto follows the phone; light/dark pin it (kept per device) */
-const THEME_ICON = {auto:'◐︎', light:'☀︎', dark:'☾︎'}, THEME_NAME = {auto:'Otomatik', light:'Açık', dark:'Koyu'};
+const THEME_ICON = {
+  auto:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path class="fillc" d="M12 3.5a8.5 8.5 0 0 1 0 17z"/></svg>',
+  light:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>',
+  dark:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/></svg>'}, THEME_NAME = {auto:'Otomatik', light:'Açık', dark:'Koyu'};
 function themeMode(){ const t = lsGet('cepkocum-theme'); return t === 'light' || t === 'dark' ? t : 'auto'; }
 function applyTheme(){
   const t = themeMode(), root = document.documentElement;
@@ -520,7 +536,7 @@ function applyTheme(){
   else { root.setAttribute('data-theme', t); root.dataset.cepTheme = '1'; }
   const dark = t === 'dark' || (t === 'auto' && (root.getAttribute('data-theme') === 'dark' || (!root.getAttribute('data-theme') && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)));
   const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = dark ? '#0E1217' : '#F2F4F7';
-  const b = document.getElementById('themeBtn'); if (b){ b.textContent = THEME_ICON[t]; b.setAttribute('aria-label', 'Görünüm: ' + THEME_NAME[t]); }
+  const b = document.getElementById('themeBtn'); if (b){ b.innerHTML = THEME_ICON[t]; b.setAttribute('aria-label', 'Görünüm: ' + THEME_NAME[t]); }
 }
 function setTheme(t){ lsSet('cepkocum-theme', t); applyTheme(); render(); }
 applyTheme();
@@ -556,7 +572,6 @@ const standalone = window.navigator.standalone === true || (window.matchMedia &&
 const pushSupported = PWA && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 var pushOn = PWA && lsGet('cepkocum-push') === 'on';
 var swReg = null, syncTimer = null;
-if (pushOn && !state.setup.bildirim) state.setup = Object.assign({}, state.setup, {bildirim:true});
 function deviceId(){
   let id = lsGet('cepkocum-device');
   if (!id || !/^[a-f0-9-]{36}$/.test(id)){
@@ -638,7 +653,7 @@ async function enablePush(){
     const r = await pushApi('subscribe', Object.assign(pushPayload(), {subscription:sub.toJSON()}));
     if (!r || !r.ok) throw new Error((r && r.error) || 'sunucuya kaydedilemedi');
     pushOn = true; lsSet('cepkocum-push','on');
-    state.setup = Object.assign({}, state.setup, {bildirim:true}); save(); render();
+    save(); render();
     toast('Bildirimler açık. Deneme bildirimi geliyor.');
     pushApi('test', {device_id:deviceId()}).catch(() => {});
   } catch(e){ toast('Bildirim açılamadı: ' + (e && e.message ? e.message : e)); }
@@ -1036,17 +1051,6 @@ async function analyzePhotos(btn){
     }
     btn.disabled = false; return;
   }
-  if (PWA){
-    btn.disabled = true; out.textContent = 'Koçun fotoğraflara bakıyor… (30 sn kadar sürebilir)';
-    try {
-      const images = await Promise.all([first.blob, last.blob].map(async b => ({media_type: b.type && /^image\/(jpeg|png|webp)$/.test(b.type) ? b.type : 'image/jpeg', data: await blobB64(b)})));
-      out.innerHTML = fmtAI(await coachServer('', [{role:'user', content:prompt}], images));
-      btn.disabled = false; return;
-    } catch(e){
-      btn.disabled = false;
-      out.textContent = (e && e.message) || 'İnceleme yapılamadı. Tekrar dene.'; return;
-    }
-  }
   const files = [new File([first.blob], 'baslangic-'+first.d+'.jpg', {type:'image/jpeg'}), new File([last.blob], 'son-'+last.d+'.jpg', {type:'image/jpeg'})];
   if (navigator.canShare && navigator.canShare({files})){
     try { await navigator.clipboard.writeText(prompt); } catch(e){}
@@ -1060,8 +1064,6 @@ async function analyzePhotos(btn){
 /* coach notes for today */
 function coachNotes(k){
   const dow = parseKey(k).getDay(), w = SCHEDULE[dow], wk = weekOf(k), out = [], l = peekLog(k);
-  const missingSetup = SETUP.filter(x => !state.setup[x.id]).length;
-  if (missingSetup) out.push(['red', 'Hazırlık listende '+missingSetup+' eksik var. Aşağıdan tamamla, takviyeler olmadan başlama.']);
   if (isDeload(k)) out.push(['blue', 'Bu hafta hafif hafta. Ağırlıkları uygulama düşürdü, söylenen ağırlıkla çalış.']);
   else if (wk <= 2) out.push(['blue', 'Hafta '+wk+': hareketleri öğrenme dönemi. Ağırlıklar hafif, tekniğe odaklan.']);
   if (k === state.start && dayPlan(k).length < 6) out.push(['green', 'Hoş geldin. Bugün sadece kalan görevleri yap. Programın yarın sabah '+state.settings.wake+'’de tam olarak başlıyor.']);
@@ -1133,19 +1135,68 @@ function completedDays(){
   return n;
 }
 function todayRatio(){ const k = todayKey(), p = dayPlan(k); return p.length ? p.filter(it => isDone(k, it)).length / p.length : 0; }
-/* front-view silhouette with a broad-shoulder, narrow-waist (V) shape; filled from the feet up */
-const BODY_SHAPES = '<circle cx="50" cy="13" r="10"/><rect x="45" y="22" width="10" height="7" rx="2"/>'
-  + '<path d="M24 31 Q50 25 76 31 L71 66 Q50 72 29 66 Z"/>'
-  + '<path d="M29 66 Q50 72 71 66 L69 84 Q50 88 31 84 Z"/>'
-  + '<rect x="14" y="31" width="10" height="44" rx="5" transform="rotate(8 19 31)"/><rect x="76" y="31" width="10" height="44" rx="5" transform="rotate(-8 81 31)"/>'
-  + '<rect x="32" y="82" width="15" height="54" rx="7"/><rect x="53" y="82" width="15" height="54" rx="7"/>';
+/* athletic front-view figure (V-taper, defined delts, narrow waist), drawn as one smooth outline:
+   the right half is described once and mirrored. It fills from the feet up as completed days add up. */
+const BODY_PATH = (() => {
+  const S = [54.5,25.5], segs = [
+    ['L',[55,30.5]],
+    ['C',[59.5,32.5],[65.5,33],[71,35]],          /* trapezius to shoulder */
+    ['C',[77.5,37],[80,43],[79.5,50.5]],          /* deltoid */
+    ['C',[79.5,57],[81,62.5],[80.8,68.5]],        /* upper arm */
+    ['C',[81.2,79],[82,89],[80.6,98.5]],          /* forearm */
+    ['C',[81.2,104],[81,111],[78,114.5]],         /* hand */
+    ['C',[75.8,116.5],[74,113.5],[74.6,109]],
+    ['C',[74.3,100],[73.8,90],[72.6,81.5]],       /* inner forearm */
+    ['C',[71.6,72],[71,61],[68.6,53]],            /* inner arm to armpit */
+    ['C',[68,61],[64.5,71],[62.4,79]],            /* lats tapering to the waist */
+    ['C',[61.6,85],[61.6,90],[62.6,95]],
+    ['C',[64,99],[65.2,104],[65.3,110]],          /* hip */
+    ['C',[65.6,121],[64,132],[61.6,141]],         /* outer thigh */
+    ['C',[61,145],[61.4,148],[62.3,152]],         /* knee */
+    ['C',[63.4,160],[62.3,170],[59.6,180]],       /* calf */
+    ['C',[59,184],[59.2,188],[60.6,191]],         /* ankle */
+    ['C',[61.6,194],[59.5,196],[56.6,196]],       /* foot */
+    ['L',[53,196]],
+    ['C',[52,193],[52.3,188.5],[52.8,184]],
+    ['C',[52.2,172],[51.8,161],[52.8,151]],       /* inner calf */
+    ['C',[53,147],[52.8,145],[52.6,142]],
+    ['C',[52.4,131],[52,120],[50,111]]            /* inner thigh to centre */
+  ];
+  const f = p => p.map(v => +v.toFixed(1)).join(' '), m = p => [100 - p[0], p[1]];
+  const pts = [S]; segs.forEach(s => pts.push(s[s.length - 1]));
+  let d = 'M' + f(S);
+  segs.forEach(s => { d += s[0] === 'L' ? ' L' + f(s[1]) : ' C' + f(s[1]) + ' ' + f(s[2]) + ' ' + f(s[3]); });
+  for (let i = segs.length - 1; i >= 0; i--){
+    const s = segs[i], start = pts[i];
+    d += s[0] === 'L' ? ' L' + f(m(start)) : ' C' + f(m(s[2])) + ' ' + f(m(s[1])) + ' ' + f(m(start));
+  }
+  return d + ' Z';
+})();
+const BODY_SHAPES = `<ellipse cx="50" cy="14.5" rx="8.6" ry="10.8"/><path d="${BODY_PATH}"/>`;
+/* muscle definition lines: chest, abs, obliques, quads */
+const BODY_DETAIL = '<path d="M50 45v54M38 49c4 4.5 8.5 5.5 12 4.2M62 49c-4 4.5-8.5 5.5-12 4.2M43.5 62h13M43.8 71h12.4M44.4 80h11.2'
+  + 'M40.5 58c1 9 2.4 18 5 26M59.5 58c-1 9-2.4 18-5 26M57.8 120c.8 7.5.6 14-.8 20M42.2 120c-.8 7.5-.6 14 .8 20'
+  + 'M29.4 47c2.6 1.8 4.2 4.6 4.6 8M70.6 47c-2.6 1.8-4.2 4.6-4.6 8"/>';
 function bodyHTML(done, today){
-  const H = 140, fullH = Math.min(1, done / GOAL_DAYS) * H, todayH = Math.min(1, (done + today) / GOAL_DAYS) * H;
-  return `<svg class="jfig" viewBox="0 0 100 ${H}" role="img" aria-label="Hedefe ilerleme: ${done} / ${GOAL_DAYS} gün">
-    <defs><clipPath id="bodyClip">${BODY_SHAPES}</clipPath></defs>
+  const H = 200, top = 4, span = H - top, fullH = Math.min(1, done / GOAL_DAYS) * span, todayH = Math.min(1, (done + today) / GOAL_DAYS) * span;
+  const pct = Math.round(done / GOAL_DAYS * 100);
+  return `<svg class="jfig" viewBox="0 0 120 ${H}" role="img" aria-label="Hedefe ilerleme: ${done} / ${GOAL_DAYS} gün, yüzde ${pct}">
+    <defs>
+      <clipPath id="bodyClip">${BODY_SHAPES}</clipPath>
+      <linearGradient id="bodyGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="bg-a"/><stop offset="1" class="bg-b"/></linearGradient>
+      <linearGradient id="bodyShade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient>
+    </defs>
     <g class="b-base">${BODY_SHAPES}</g>
-    <g clip-path="url(#bodyClip)"><rect class="b-today" x="0" y="${(H - todayH).toFixed(1)}" width="100" height="${todayH.toFixed(1)}"/><rect class="b-fill" x="0" y="${(H - fullH).toFixed(1)}" width="100" height="${fullH.toFixed(1)}"/></g>
-    ${MILESTONES.slice(0, -1).map(m => { const y = (H - m.d / GOAL_DAYS * H).toFixed(1); return `<line class="b-mark" x1="2" x2="98" y1="${y}" y2="${y}"/>`; }).join('')}
+    <g clip-path="url(#bodyClip)">
+      <rect class="b-today" x="0" y="${(H - todayH).toFixed(1)}" width="100" height="${todayH.toFixed(1)}"/>
+      <rect fill="url(#bodyGrad)" x="0" y="${(H - fullH).toFixed(1)}" width="100" height="${fullH.toFixed(1)}"/>
+      ${fullH > 0 ? `<rect class="b-level" x="0" y="${(H - fullH - .6).toFixed(1)}" width="100" height="1.2"/>` : ''}
+      <rect fill="url(#bodyShade)" x="0" y="0" width="100" height="${H}"/>
+      <g class="b-detail">${BODY_DETAIL}</g>
+    </g>
+    <g class="b-line">${BODY_SHAPES}</g>
+    ${MILESTONES.slice(0, -1).map(m => { const y = (H - m.d / GOAL_DAYS * span).toFixed(1); return `<line class="b-mark" x1="86" x2="94" y1="${y}" y2="${y}"/><text class="b-tick" x="96" y="${(+y + 2.6).toFixed(1)}">${m.d}</text>`; }).join('')}
+    <line class="b-axis" x1="90" x2="90" y1="${top}" y2="${H}"/>
   </svg>`;
 }
 function journeyHTML(compact){
@@ -1228,7 +1279,7 @@ function renderTabs(){
 function renderHeader(){
   const d = new Date(), k = todayKey(), w = SCHEDULE[d.getDay()];
   document.getElementById('hdrSub').textContent = 'Hafta '+weekOf(k)+' · '+(w ? WORKOUTS[w].name+(isDeload(k)?' (hafif)':'') : 'Dinlenme günü');
-  document.getElementById('hdrClock').firstChild.textContent = pad(d.getHours())+':'+pad(d.getMinutes());
+  renderSess();
   document.getElementById('hdrDay').textContent = DAYNAMES[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];
 }
 
@@ -1262,7 +1313,7 @@ function heroHTML(k, plan){
   return `<div class="hero"><div class="eyebrow">${eyebrow}</div><h3>${esc(it.title)}</h3><p class="sub">${esc(it.sub)}</p>${actions}${late}</div>`;
 }
 
-let settingsOpen = false, setupOpen = null, confirmReset = false;
+let settingsOpen = false, confirmReset = false;
 function renderToday(){
   const k = todayKey(), plan = dayPlan(k), t = dayTotals(k), now = nowHM();
   let html = heroHTML(k, plan) + pushCardHTML();
@@ -1274,14 +1325,6 @@ function renderToday(){
   html += journeyHTML(true);
   const notes = coachNotes(k);
   if (notes.length) html += `<div class="notes">${notes.map(([c,txt]) => `<div class="note"><i style="background:var(--${c})"></i><span>${esc(txt)}</span></div>`).join('')}</div>`;
-
-  const missing = SETUP.filter(x => !state.setup[x.id]);
-  if (missing.length){
-    const open = setupOpen === null ? true : setupOpen;
-    html += `<h2>Başlamadan önce</h2><details class="card setup" id="setupBox" ${open?'open':''}><summary class="row" style="justify-content:space-between;cursor:pointer;list-style:none"><h3>Hazırlık listesi</h3><span class="pill p-red">${SETUP.length-missing.length} / ${SETUP.length}</span></summary><div style="margin-top:8px">`
-      + SETUP.map(x => `<label class="ck${state.setup[x.id]?' got':''}"><input type="checkbox" data-setup="${x.id}" ${state.setup[x.id]?'checked':''}><div><h3>${esc(x.t)}</h3><p>${esc(x.d)}</p></div></label>`).join('')
-      + `</div></details>`;
-  }
 
   html += `<h2>Bugünün planı</h2><div class="tl">`;
   let nowIdx = -1; plan.forEach((it,i) => { if (it.t <= now && !isDone(k,it)) nowIdx = i; });
@@ -1404,12 +1447,12 @@ function renderFood(){
     <div class="stat"><span>Su</span><b>3</b><span>litre</span></div></div>
     <p class="muted small" style="margin-top:8px">Kaloriyi sayman gerekmez. Aşağıdaki menüye uy, porsiyonlar bu hedefe göre ayarlı. Bel ölçün 2 hafta düşmezse uygulama hedefi kendisi düşürür.</p>`;
   html += phaseCardHTML();
-  html += `<h2>Her gün bunu ye</h2><div class="card">`
-    + mealRow(state.settings.breakfast,'Kahvaltı shake’i','300 ml süt + 1 muz + 1 ölçek whey + 5 g kreatin, blenderda.','35 g protein')
-    + mealRow('12:30','Öğle (hafta içi)','Hazırladığın kap: 200 g tavuk + 1 kase pilav. Yanına salata veya yoğurt.','50 g protein')
-    + mealRow('16:30','Ara öğün','150 g süzme peynir (yoksa 200 g yoğurt veya 2 yumurta). Antrenman günleri '+addMin(state.settings.workout,-120)+'’de, yanına 1 muz.','18 g protein')
-    + mealRow('20:00','Akşam','Tabağın yarısı sebze, avuç kadar et/tavuk/balık/köfte veya baklagil, 4–5 kaşık pilav veya 1 dilim ekmek.','30 g protein')
-    + mealRow('21:00','Protein kontrolü',PROFILE.protein+' g’a ulaşmadıysan 1 ölçek whey + su.','+24 g')
+  /* today's menu, from the same plan as the Today tab (weekday vs weekend lunch, workout-day snack time) */
+  const tk = todayKey(), td = parseKey(tk), tw = SCHEDULE[td.getDay()];
+  const menu = dayPlan(tk, true).filter(it => ['kahvalti','ogle','ara','aksam','magnezyum','prep','cozdur'].includes(it.id));
+  html += `<h2>Bugün ne yiyeceksin</h2><p class="muted small" style="margin:-4px 0 8px">${DAYNAMES[td.getDay()]} ${td.getDate()} ${MONTHS[td.getMonth()]} · ${tw ? WORKOUTS[tw].name + ' antrenman günü' : 'dinlenme günü'}</p><div class="card">`
+    + menu.map(it => mealRow(it.t, it.title, it.sub, it.p ? it.p + ' g protein' : (isDone(tk, it) ? '✓' : ''))).join('')
+    + mealRow('21:00','Protein kontrolü',PROFILE.protein+' g’a ulaşmadıysan 1 ölçek whey + su. Şu ana kadar ~'+proteinSoFar(tk)+' g.','+24 g')
     + `</div>`;
   html += `<h2>Takviyeler (zorunlu)</h2><div class="card">`
     + suppRow('Kreatin monohidrat','5 g · her sabah','Shake’ine kat. Spor olmayan günler de iç. İlk haftalarda 1–2 kg su tutar, yağ değildir.')
@@ -1433,7 +1476,7 @@ function renderFood(){
     <li>Tartıda ilk 2–3 hafta 1–2 kg artış görürsen panik yapma: kreatin suyu. Bel ölçüne bak.</li></ul></div>`;
   view.innerHTML = html;
 }
-const mealRow = (t, h, d, m) => `<div class="meal"><span class="t">${t}</span><div><div class="row" style="justify-content:space-between"><h3>${h}</h3><span class="pill p-yellow">${m}</span></div><p>${d}</p></div></div>`;
+const mealRow = (t, h, d, m) => `<div class="meal"><span class="t">${t}</span><div><div class="row" style="justify-content:space-between"><h3>${h}</h3>${m ? `<span class="pill p-yellow">${m}</span>` : ''}</div><p>${d}</p></div></div>`;
 const suppRow = (h, dose, d) => `<div class="supp"><h3>${h}</h3><span class="pill p-green">${dose}</span><p>${d}</p></div>`;
 
 function lineChart(points, field, goal, unit, color){
@@ -1496,84 +1539,153 @@ function renderProgress(){
   renderPhotos();
 }
 
-/* coach chat */
-let chatBusy = false, chatCtl = null;
+/* coach: answers on the user's own Claude plan (in claude.ai or the Claude app), never on paid API credits.
+   Its memory is everything this app records (summarised in contextText) plus the notes in state.mem. */
+let chatBusy = false, chatCtl = null, memDraft = '';
 const COACH_QS = ['Bugün ne yapacağım?','Dışarıda yemek yiyeceğim, ne yiyeyim?','Bu hafta nasıl gidiyorum?','Squat yaparken dizim ağrıyor','Antrenmanı kaçırdım, ne yapayım?','Tahlil sonuçlarımı yazacağım'];
+const QN = {sleep:SLEEP_H.map(h => h+' sa'), energy:['yorgun','normal','dinç'], sore:['yok','hafif','çok'], offplan:['hayır','biraz','çok'], steps:['az','orta','çok']};
+const MEM_RE = /\[\[HAFIZA:\s*([^\]]+?)\s*\]\]/g;
+function addMemory(t, by){
+  t = String(t).trim().slice(0, 200);
+  if (!t || state.mem.some(m => m.t === t)) return;
+  state.mem.push({d:todayKey(), t, by});
+  if (state.mem.length > 40) state.mem = state.mem.slice(-40);
+}
+function memoryCardHTML(){
+  const list = state.mem.map((m,i) => `<li><span><b class="muted small">${esc(m.d.split('-').reverse().slice(0,2).join('.'))}${m.by === 'koç' ? ' · koç' : ''}</b> ${esc(m.t)}</span><button type="button" class="link" data-delmem="${i}">Sil</button></li>`).join('');
+  return `<h2>Koçunun hafızası</h2><div class="card">
+    <p class="muted small">Koçun bu uygulamaya girdiğin her şeyi bilir: bütün antrenmanların ve ağırlıkların, öğünlerin, suyun, uykun, ölçümlerin, sabah ve akşam cevapların. Bunlara ek olarak bilmesi gerekenleri buraya yaz: ağrı, sevmediğin yemek, değişen iş saati.${sample ? ' Sohbette öğrendiği önemli şeyleri de kendisi ekler.' : ''}</p>
+    ${list ? `<ul class="memlist">${list}</ul>` : ''}
+    <form class="composer" id="memForm"><input id="memIn" type="text" placeholder="Örn: Sol dizim squatta ağrıyor" aria-label="Hafızaya not" value="${esc(memDraft)}"><button type="submit" class="btn">Ekle</button></form></div>`;
+}
+function extLink(cls, attrs, label){ return `<a class="${cls}" href="https://claude.ai/new" target="_blank" rel="noopener" ${attrs}>${label}</a>`; }
 function renderCoach(){
-  if (!sample && !PWA){
-    view.innerHTML = `<h2>Koçuna sor</h2><p class="muted small">Koçun Claude uygulamasında cevap verir. Sorunu seç veya yaz: son 14 günün, ağırlıkların ve cevapların soruna otomatik eklenir.</p>
-      <div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-extask="${esc(q)}">${esc(q)} ↗</button>`).join('')}</div>
-      <div class="composer"><textarea id="chatIn" placeholder="Sorunu yaz…" aria-label="Soru"></textarea><button type="button" class="btn primary" data-extask="">Claude’da sor ↗</button></div>
+  let html = `<h2>Koçunla konuş</h2>`;
+  html += `<div class="card talk">
+    ${extLink('btn primary full', 'data-talk="voice"', '🎙 Sesli konuş')}
+    ${sample ? '' : extLink('btn full', 'data-talk="text" style="margin-top:8px"', '✍️ Yazarak sor')}
+    <p class="muted small" style="margin-top:10px">Claude açılır, koçun bütün kayıtlarınla birlikte gelir. Claude üyeliğini kullanır, ek ücret yok. Sesli konuşmak için açılan sohbette <b>ses dalgası</b> düğmesine bas; AirPods ile set aralarında konuşabilirsin.</p>
+    <p id="talkNote" class="small" style="margin-top:6px;color:var(--green)" hidden></p></div>`;
+  if (!sample){
+    html += `<div class="chips">${COACH_QS.map(q => extLink('chip', `data-ext="${esc(q)}"`, esc(q) + ' ↗')).join('')}</div>
+      <div class="composer"><textarea id="chatIn" placeholder="Sorunu yaz…" aria-label="Soru"></textarea>${extLink('btn primary', 'data-ext=""', 'Sor ↗')}</div>
       <p id="chatErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>`;
-    return;
+  } else {
+    html += `<div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
+    html += `<div class="chat" id="chat">${state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('')}</div>`;
+    html += `<form class="composer" id="composer"><textarea id="chatIn" placeholder="Koçuna yaz…" aria-label="Mesaj"></textarea><button type="submit" class="btn primary">${chatBusy?'Durdur':'Gönder'}</button></form><p id="chatErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>`;
+    if (state.chat.length) html += `<div style="margin-top:10px"><button type="button" class="link" data-act="clearChat">Sohbeti temizle</button></div>`;
   }
-  let html = `<h2>Koçuna sor</h2><p class="muted small">Koçun bütün verilerini, son 14 gününü ve cevaplarını biliyor. Ne yapacağını sana net söyler.</p>`;
-  html += `<div class="chips">${COACH_QS.map(q => `<button type="button" class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
-  html += `<div class="chat" id="chat">${state.chat.map(m => `<div class="bub ${m.role==='user'?'me':'ai'}">${m.role==='user'?esc(m.content):fmtAI(m.content)}</div>`).join('')}</div>`;
-  html += `<form class="composer" id="composer"><textarea id="chatIn" placeholder="Koçuna yaz…" aria-label="Mesaj"></textarea><button type="submit" class="btn primary">${chatBusy?'Durdur':'Gönder'}</button></form><p id="chatErr" class="small" style="color:var(--red);margin-top:6px" hidden></p>`;
-  if (state.chat.length) html += `<div style="margin-top:10px"><button type="button" class="link" data-act="clearChat">Sohbeti temizle</button></div>`;
+  html += memoryCardHTML();
+  html += `<details class="card" style="margin-top:14px"><summary><b>Claude’u ilk kez kuruyorsan</b></summary><ol class="clean small" style="margin-top:8px">
+    <li>App Store’dan <b>Claude</b> uygulamasını indir, üyeliğinle giriş yap.</li>
+    <li>Claude → Ayarlar → <b>Hafıza</b>’yı aç. Böylece sohbetler arasında da seni hatırlar.</li>
+    <li>Ekran kilitlenince ses kesiliyorsa antrenmanda iPhone Ayarlar → Ekran → Otomatik Kilit’i “Hiçbir Zaman” yap, sonra geri al.</li></ol></details>`;
   view.innerHTML = html;
-  const c = document.getElementById('chat'); if (c.lastElementChild) c.lastElementChild.scrollIntoView({block:'nearest'});
+  const c = document.getElementById('chat'); if (c && c.lastElementChild) c.lastElementChild.scrollIntoView({block:'nearest'});
 }
-function fmtAI(t){ return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,''); }
-function contextText(){
-  const k = todayKey(), lines = [], qn = {sleep:SLEEP_H.map(h => h+' sa'), energy:['yorgun','normal','dinç'], sore:['yok','hafif','çok'], offplan:['hayır','biraz','çok'], steps:['az','orta','çok']};
-  for (let i=13;i>=0;i--){
-    const d = addDays(k,-i); if (daysBetween(state.start,d) < 0) continue;
-    const l = peekLog(d), t = dayTotals(d), dow = parseKey(d).getDay();
-    let s = d+' '+DAYNAMES[dow]+': protein~'+t.p+'g, su '+fmt(t.water/1000)+'L, görev '+t.done+'/'+t.total;
-    if (SCHEDULE[dow]) s += ', planlı '+WORKOUTS[SCHEDULE[dow]].name;
-    if (l && l.q) s += ', cevaplar: '+Object.keys(l.q).map(q => q+'='+(qn[q] ? qn[q][l.q[q]] : l.q[q])).join(' ');
-    if (l && l.w){ s += ', yapılan '+WORKOUTS[l.w.key].name+(l.w.done?' (bitti)':' (yarım)')+': '+Object.keys(l.w.ex||{}).map(x => { const ok = l.w.ex[x].filter(z=>z&&z.ok); return ok.length ? EX[x].n+' '+ok.map(z=>(EX[x].type==='kg'?fmt(z.kg)+'kg×':'')+z.r).join('/') : ''; }).filter(Boolean).join('; '); }
-    lines.push(s);
+function fmtAI(t){ return esc(String(t).replace(MEM_RE, '').trim()).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,''); }
+function dayLine(d){
+  const l = peekLog(d), t = dayTotals(d), dow = parseKey(d).getDay();
+  let s = d+' '+DAYNAMES[dow]+': protein~'+t.p+'g, su '+fmt(t.water/1000)+'L, görev '+t.done+'/'+t.total;
+  if (SCHEDULE[dow]) s += ', planlı '+WORKOUTS[SCHEDULE[dow]].name;
+  else s += ', yürüyüş '+(l && l.c && l.c.yuruyus ? 'yapıldı'+(l.walkMin ? ' ('+l.walkMin+' dk)' : '') : 'yok');
+  if (l && l.w && l.w.min) s += ', antrenman süresi '+l.w.min+' dk';
+  if (l && l.q && Object.keys(l.q).length) s += ', cevaplar: '+Object.keys(l.q).map(q => q+'='+(QN[q] ? QN[q][l.q[q]] : l.q[q])).join(' ');
+  if (l && l.w && l.w.key) s += ', yapılan '+WORKOUTS[l.w.key].name+(l.w.done?' (bitti)':' (yarım)')+': '+Object.keys(l.w.ex||{}).map(x => { const ok = l.w.ex[x].filter(z=>z&&z.ok); return ok.length ? EX[x].n+' '+ok.map(z=>(EX[x].type==='kg'?fmt(z.kg)+'kg×':'')+z.r).join('/') : ''; }).filter(Boolean).join('; ');
+  return s;
+}
+/* every exercise ever done: first, last and best, so the coach sees the whole progression */
+function exerciseHistory(){
+  const ds = Object.keys(state.logs).sort(), out = [];
+  Object.keys(EX).forEach(key => {
+    const ses = [];
+    ds.forEach(d => { const s = state.logs[d].w && state.logs[d].w.ex && state.logs[d].w.ex[key]; if (s){ const ok = s.filter(x => x && x.ok); if (ok.length) ses.push({d, ok}); } });
+    if (!ses.length) return;
+    const e = EX[key], f = ses[0], z = ses[ses.length-1], v = x => e.type === 'kg' ? fmt(+x.kg || 0)+'kg×'+x.r : x.r + (e.type === 'sec' ? 'sn' : ' tekrar');
+    out.push(e.n+': '+ses.length+' seans; ilk '+f.d+' '+v(f.ok[0])+'; son '+z.d+' '+z.ok.map(v).join('/')+'; en iyi '+fmt(bestValue(key, todayKey()))+(e.type === 'kg' ? ' kg' : '')+'; hedef '+GOAL[key]);
+  });
+  return out.length ? out.join('\n') : 'Henüz antrenman kaydı yok.';
+}
+/* one line per program week (last 8), so long-term habits are visible */
+function weekSummaries(){
+  const k = todayKey(), weeks = weekOf(k), out = [];
+  for (let w = Math.max(1, weeks - 7); w <= weeks; w++){
+    let n = 0, p = 0, wo = 0, woPlan = 0, walk = 0, walkPlan = 0, sleep = [], tired = 0, off = 0, sore = 0, full = 0;
+    for (let i = 0; i < 7; i++){
+      const d = addDays(state.start, (w-1)*7 + i); if (d > k) break;
+      const l = peekLog(d), dow = parseKey(d).getDay(); n++; p += dayTotals(d).p;
+      if (dayStatus(d) === 'full') full++;
+      if (SCHEDULE[dow]){ woPlan++; if (l && l.w && l.w.done) wo++; } else { walkPlan++; if (l && l.c && l.c.yuruyus) walk++; }
+      if (l && l.q){ if (l.q.sleep !== undefined) sleep.push(SLEEP_H[l.q.sleep]); if (l.q.energy === 0) tired++; if (l.q.offplan === 2) off++; if (l.q.sore === 2) sore++; }
+    }
+    if (!n) continue;
+    out.push('Hafta '+w+(isDeload(addDays(state.start,(w-1)*7))?' (hafif)':'')+': tam gün '+full+'/'+n+', antrenman '+wo+'/'+woPlan+', yürüyüş '+walk+'/'+walkPlan+', ort. protein '+Math.round(p/n)+' g, ort. uyku '+(sleep.length ? fmt(sleep.reduce((a,b) => a+b, 0)/sleep.length)+' sa' : '?')+', yorgun uyanış '+tired+', çok plan dışı '+off+', çok kas ağrısı '+sore);
   }
-  return 'KULLANICI: 168 cm, başlangıç 69 kg, bel 87,5 cm. Spora sıfırdan başlıyor, hiç bilgisi yok. Eşiyle birlikte çalışıyor, zamanı kısıtlı. Sabahları dinç kalkamıyor. Hedef: Tom Holland gibi kuru ve atletik görünüm, bel ~77 cm.\n'
-   + 'PROGRAM: Salı Üst A, Çarşamba Alt A, Cuma Üst B, Cumartesi Alt B (üst/alt split, çift aralıklı ilerleme: tüm setlerde üst tekrar → ağırlık artar; 9 haftada bir hafif hafta). Pzt/Per/Paz 40-50 dk eğimli yürüyüş (koşu bandı %8-10 eğim).\n'
-   + 'HIZLI SENARYO: '+phaseInfo().name+' (aşama '+phaseInfo().n+'/3). Aşama 1 bel>83 cm yağ yakımı+öğrenme, aşama 2 bel 78-83 kuru görünüm, aşama 3 bel≤78 şekillendirme (bakım kalorisi). İlk antrenmanlarda ayar setleri ile ağırlık bulunur, sonra uygulama her seti belirler; hareket hedef ağırlıklarına ulaşınca bakım modu. Dinlenme günleri 40-50 dk eğimli yürüyüş, günde 10.000 adım, 8 saat uyku.\n'
-   + 'BESLENME: günlük '+state.kcal+' kcal, '+PROFILE.protein+' g protein, 3 L su. Ara öğün 150 g süzme peynir. Kahvaltı whey+süt+muz+5g kreatin shake; hafta içi öğle meal prep 200 g tavuk + pilav; akşam ev yemeği; protein eksikse 21:00 whey. Zorunlu takviyeler: kreatin 5 g, whey, magnezyum glisinat 200-350 mg yatmadan önce.\n'
-   + 'SAATLER: kalkış '+state.settings.wake+', kahvaltı '+state.settings.breakfast+', antrenman '+state.settings.workout+', yatış '+state.settings.sleep+'.\n'
-   + 'ŞU AN: '+k+' '+DAYNAMES[parseKey(k).getDay()]+' saat '+nowHM()+', program haftası '+weekOf(k)+(isDeload(k)?' (hafif hafta)':'')+'. Hazırlık listesinde eksik: '+(SETUP.filter(x => !state.setup[x.id]).map(x => x.t).join(', ') || 'yok')+'.\n'
-   + 'ÖLÇÜMLER: '+state.measurements.map(m => m.d+' '+m.kg+'kg bel '+m.bel+'cm').join('; ')+'\n'
-   + 'SON 14 GÜN:\n'+lines.join('\n');
+  return out.join('\n');
 }
-function coachRules(){
-  return 'Sen bu kullanıcının kişisel antrenörü ve beslenme koçusun. Kullanıcı hiçbir şey bilmiyor; ona tavsiye değil, net talimat ver ("Şunu yap", "Bunu ye", "Bugün şu ağırlıkla çalış"). Her zaman Türkçe, kısa (en fazla 8-10 satır), somut sayılarla yaz. Terimleri basitçe açıkla. Plana sadık kal; planı değiştirmen gerekiyorsa nedenini tek cümleyle söyle. Eklemde keskin ağrı, hastalık, ilaç veya tahlil yorumu gibi tıbbi konularda doktora gitmesini söyle. Markdown başlık kullanma.\n\n' + contextText();
+function contextText(recentDays){
+  const k = todayKey(), dt = parseKey(k), dow = dt.getDay(), tk = addDays(k, 1), tdow = parseKey(tk).getDay(), lines = [];
+  for (let i = recentDays - 1; i >= 0; i--){ const d = addDays(k, -i); if (d >= state.start) lines.push(dayLine(d)); }
+  const plan = dayPlan(k).map(it => it.t+' '+it.title+(isDone(k, it) ? ' ✓' : '')).join('; ');
+  return 'KULLANICI: 168 cm, başlangıç 69 kg, bel 87,5 cm. Spora sıfırdan başladı, hiç bilgisi yok. Eşiyle birlikte çalışıyor, zamanı kısıtlı. Sabahları dinç kalkamıyor. Hedef: Tom Holland gibi kuru ve atletik görünüm, bel ~77 cm.\n'
+   + 'ŞU AN: '+DAYNAMES[dow]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]+' '+dt.getFullYear()+', saat '+nowHM()+'. Programın '+(daysBetween(state.start, k)+1)+'. günü, '+weekOf(k)+'. hafta'+(isDeload(k)?' (hafif hafta)':'')+'. Hedef takviminde '+completedDays()+'/'+GOAL_DAYS+' tam gün.\n'
+   + 'BUGÜN: '+(SCHEDULE[dow] ? 'antrenman günü. Bugünkü ağırlıklar: '+workoutBrief(k) : 'dinlenme günü, ağırlık yok; 40-50 dk eğimli yürüyüş.')+'\n'
+   + 'BUGÜNÜN PLANI (✓ = yaptı): '+plan+'\n'
+   + 'YARIN: '+DAYNAMES[tdow]+', '+(SCHEDULE[tdow] ? WORKOUTS[SCHEDULE[tdow]].name+' antrenmanı saat '+state.settings.workout : 'dinlenme + yürüyüş')+'.\n'
+   + 'HAFTALIK PROGRAM: Pzt yürüyüş, Salı Üst A, Çarşamba Alt A, Perşembe yürüyüş, Cuma Üst B, Cumartesi Alt B, Pazar yürüyüş + öğle kaplarını hazırlama. Üst/alt split, çift aralıklı ilerleme (tüm setlerde üst tekrar → ağırlık artar), 9 haftada bir hafif hafta, hareket hedef ağırlığa ulaşınca bakım.\n'
+   + 'HIZLI SENARYO: '+phaseInfo().name+' (aşama '+phaseInfo().n+'/3). Aşama 1 bel>83 cm yağ yakımı, aşama 2 bel 78-83 kuru görünüm, aşama 3 bel≤78 şekillendirme (bakım kalorisi).\n'
+   + 'BESLENME: günlük '+state.kcal+' kcal, '+PROFILE.protein+' g protein, 3 L su. Kahvaltı whey+süt+muz+5 g kreatin shake; hafta içi öğle 200 g tavuk + pilav kabı, hafta sonu ev yemeği; ara öğün 150 g süzme peynir; akşam ev yemeği; protein eksikse 21:00 whey. Zorunlu: kreatin 5 g, whey, magnezyum glisinat 200-350 mg yatmadan 45 dk önce.\n'
+   + 'SAATLER: kalkış '+state.settings.wake+', kahvaltı '+state.settings.breakfast+', antrenman '+state.settings.workout+', yürüyüş '+state.settings.walk+', yatış '+state.settings.sleep+'.\n'
+   + 'ÖLÇÜMLER: '+state.measurements.slice().sort((a,b) => a.d.localeCompare(b.d)).map(m => m.d+' '+fmt(m.kg)+' kg bel '+fmt(m.bel)+' cm').join('; ')+'\n'
+   + (state.mem.length ? 'KOÇUN HAFIZASI (kullanıcı hakkında bilmen gerekenler):\n'+state.mem.map(m => '- '+m.d+': '+m.t).join('\n')+'\n' : '')
+   + 'HAREKETLERDEKİ GELİŞİM:\n'+exerciseHistory()+'\n'
+   + 'HAFTALAR:\n'+weekSummaries()+'\n'
+   + 'SON '+recentDays+' GÜN:\n'+lines.join('\n');
 }
-/* installed app: the coach answers through our server, which holds the Claude API key */
-async function coachServer(system, messages, images, signal){
-  let r;
-  try { r = await fetch(PUSH_URL + '/coach', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({device_id:deviceId(), system, messages, images}), signal}); }
-  catch(e){ throw (e && e.name === 'AbortError') ? {code:'cancelled'} : {code:'offline', server:true, message:'İnternet bağlantını kontrol et.'}; }
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || j.error || typeof j.text !== 'string') throw {code:j.error || 'api', server:true, message:j.message || 'Yanıt alınamadı. Tekrar dene.'};
-  return j.text;
+function coachRules(voice, recentDays){
+  return 'Sen bu kullanıcının kişisel antrenörü ve beslenme koçusun. Aşağıda Cep Koçum uygulamasının onun hakkındaki bütün kayıtları var: bunlarla onu tanı, geçmişini ve bugününü bilerek cevap ver (her cümlede "kayıtlarına göre" deme). Kullanıcı hiçbir şey bilmiyor; ona tavsiye değil, net talimat ver ("Şunu yap", "Bunu ye", "Bugün şu ağırlıkla çalış"). Hangi gün olduğunu ve bugünün planını aşağıdan bil; yemek ve antrenman söylerken bugüne göre söyle. Plana sadık kal; planı değiştirmen gerekiyorsa nedenini tek cümleyle söyle. Eklemde keskin ağrı, hastalık, ilaç veya tahlil yorumu gibi tıbbi konularda doktora gitmesini söyle. Her zaman Türkçe.\n'
+   + (voice ? 'SESLİ KONUŞUYORUZ: cevapların konuşur gibi, 2-4 kısa cümle olsun. Liste, madde işareti, emoji, sembol ve markdown kullanma. Kullanıcı antrenman yaparken set aralarında soracak; kısa ve net ol.\n'
+            : 'Kısa yaz (en fazla 8-10 satır), somut sayılarla. Terimleri basitçe açıkla. Markdown başlık kullanma.\n')
+   + (sample ? 'Kullanıcı hakkında kalıcı olarak hatırlanması gereken YENİ bir bilgi öğrenirsen (sakatlık, ağrı, sevmediği yiyecek, değişen saatler, hedef), cevabının en sonuna ayrı bir satırda [[HAFIZA: kısa not]] yaz. Bilinen şeyleri tekrar yazma.\n' : '')
+   + '\n' + contextText(recentDays || 14);
 }
-function blobB64(blob){ return new Promise((ok, bad) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = bad; fr.readAsDataURL(blob); }); }
+/* the whole briefing travels in the claude.ai link; long histories are shortened to keep the link working */
+function coachPrompt(q, voice){
+  let p;
+  for (const n of [14, 10, 7, 4, 2]){
+    p = coachRules(voice, n) + '\n\n' + (voice ? 'Şimdi sesli moda geçeceğim. Önce bana tek cümleyle şu an ne yapmam gerektiğini söyle.' : 'SORUM: ' + q);
+    if (encodeURIComponent(p).length < 14000) break;
+  }
+  return p;
+}
 async function sendChat(text){
   const err = document.getElementById('chatErr');
   if (!text.trim()){ err.textContent = 'Önce bir mesaj yaz.'; err.hidden = false; return; }
-  if (!sample && !PWA){ err.textContent = 'Koç sohbeti burada çalışmıyor. Uygulamayı claude.ai’da aç.'; err.hidden = false; return; }
+  if (!sample){ err.textContent = 'Koç sohbeti burada çalışmıyor.'; err.hidden = false; return; }
   state.chat.push({role:'user', content:text.trim()});
   if (state.chat.length > 30) state.chat = state.chat.slice(-30);
   chatBusy = true; renderCoach();
   const bub = document.createElement('div'); bub.className = 'bub ai'; bub.textContent = 'Düşünüyor…';
   document.getElementById('chat').appendChild(bub); bub.scrollIntoView({block:'nearest'});
-  const rules = coachRules();
-  const turns = [{role:'user', content:rules}].concat(state.chat.slice(-12));
+  const turns = [{role:'user', content:coachRules(false)}].concat(state.chat.slice(-12));
   chatCtl = new AbortController();
+  const keep = ans => {
+    const found = [...String(ans).matchAll(MEM_RE)].map(m => m[1]);
+    found.forEach(t => addMemory(t, 'koç'));
+    state.chat.push({role:'assistant', content:String(ans).replace(MEM_RE, '').trim()});
+    if (found.length) toast('Koçun hafızasına eklendi');
+  };
   try {
-    const ans = sample
-      ? (await sample(turns, {cache:false, signal:chatCtl.signal, onText:({text}) => { bub.innerHTML = fmtAI(text); }})).text
-      : await coachServer(rules, state.chat.slice(-12), [], chatCtl.signal);
-    state.chat.push({role:'assistant', content:ans});
+    const {text:ans} = await sample(turns, {cache:false, signal:chatCtl.signal, onText:({text}) => { bub.innerHTML = fmtAI(text); }});
+    keep(ans);
   } catch(e){
-    if (e && e.text) state.chat.push({role:'assistant', content:e.text});
+    if (e && e.text) keep(e.text);
     const code = e && e.code;
     if (code !== 'cancelled'){
       chatBusy = false; save(); renderCoach();
       const er = document.getElementById('chatErr');
-      er.textContent = (e && e.server && e.message) || ({not_granted:'Koçun Claude’u kullanmasına izin verilmedi.', rate_limited:'Çok fazla mesaj gönderildi. Biraz bekleyip tekrar dene.', session_expired:'Oturumun kapanmış. Tekrar giriş yap.'})[code] || 'Yanıt alınamadı. Tekrar dene.';
-      if (code === 'no_key' || code === 'not_registered' || code === 'limit') er.insertAdjacentHTML('afterend', `<button type="button" class="btn full" style="margin-top:8px" data-extask="${esc(text.trim())}">Bunun yerine Claude uygulamasında sor ↗</button>`);
+      er.textContent = ({not_granted:'Koçun Claude’u kullanmasına izin verilmedi.', rate_limited:'Çok fazla mesaj gönderildi. Biraz bekleyip tekrar dene.', session_expired:'Oturumun kapanmış. Tekrar giriş yap.'})[code] || 'Yanıt alınamadı. Tekrar dene.';
       er.hidden = false; return;
     }
   }
@@ -1677,8 +1789,73 @@ function checkAlerts(hm){
    EVENTS
    ========================================================= */
 function go(t){ tab = t; lsSet('cepkocum-tab', tab); window.scrollTo(0,0); render(); }
+/* header stopwatch: start and finish with a confirmation. The start is a timestamp, so it keeps counting
+   with the screen off or the app closed; finishing records the minutes and ticks the workout or the walk. */
+const fmtDur = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60); return h ? h+':'+pad(m)+':'+pad(s%60) : pad(m)+':'+pad(s%60); };
+function renderSess(){
+  const b = document.getElementById('hdrClock'); if (!b) return;
+  const on = !!(state.sess && state.sess.start), txt = on ? fmtDur((Date.now() - state.sess.start)/1000) : '00:00';
+  b.classList.toggle('on', on); document.getElementById('sessT').textContent = txt;
+  b.setAttribute('aria-label', on ? 'Antrenmanı bitir, süre ' + txt : 'Antrenmanı başlat');
+  const st = document.getElementById('sheetT'); if (st && on) st.textContent = txt;
+}
+function openSheet(html){ closeSheet(); const bg = document.createElement('div'); bg.className = 'sheetbg'; bg.id = 'sheetBg'; bg.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`; document.body.appendChild(bg); }
+function closeSheet(){ const s = document.getElementById('sheetBg'); if (s) s.remove(); }
+function sessTap(){
+  if (state.sess && state.sess.start){
+    const s = state.sess, walk = s.kind === 'walk';
+    openSheet(`<h3>${walk ? 'Yürüyüşü' : 'Antrenmanı'} bitir?</h3><div class="big" id="sheetT">${fmtDur((Date.now() - s.start)/1000)}</div>
+      <p class="muted small">${esc(s.name)} · ${pad(new Date(s.start).getHours())}:${pad(new Date(s.start).getMinutes())}’te başladın. Bitirince süre kaydedilir ve ${walk ? 'yürüyüş' : 'antrenman'} görevi işaretlenir.</p>
+      <div class="row"><button type="button" class="btn" data-sess="cancel">Devam et</button><button type="button" class="btn primary" data-sess="finish">Bitir</button></div>
+      <button type="button" class="link" data-sess="discard" style="margin-top:14px">Yanlışlıkla başlattım, kaydetme</button>`);
+    return;
+  }
+  const w = SCHEDULE[new Date().getDay()], ck = currentWorkoutKey(), W = WORKOUTS[ck];
+  openSheet(w
+    ? `<h3>Antrenmanı başlat?</h3><p class="muted small" style="margin-top:6px">${esc(W.name)} · ${W.ex.length} hareket, yaklaşık 60 dakika. Sayaç ekran kapansa da saymaya devam eder.</p>
+       <div class="row"><button type="button" class="btn" data-sess="cancel">Vazgeç</button><button type="button" class="btn primary" data-sess="train">Başlat</button></div>`
+    : `<h3>Yürüyüşü başlat?</h3><p class="muted small" style="margin-top:6px">Bugün dinlenme günü: 40–50 dakika eğimli yürüyüş. Sayaç ekran kapansa da saymaya devam eder.</p>
+       <div class="row"><button type="button" class="btn" data-sess="cancel">Vazgeç</button><button type="button" class="btn primary" data-sess="walk">Başlat</button></div>
+       <button type="button" class="link" data-sess="train" style="margin-top:14px">Yürüyüş yerine ${esc(W.name)} antrenmanı yapacağım</button>`);
+}
+function sessFinish(){
+  const s = state.sess; if (!s) return 0;
+  const min = Math.max(1, Math.round((Date.now() - s.start)/60000)), l = dayLog(s.k || todayKey());
+  if (s.kind === 'train'){ const w = ensureWorkout(l, s.key || currentWorkoutKey()); w.done = true; w.min = min; }
+  else { l.c.yuruyus = true; l.walkMin = min; }
+  state.sess = null;
+  return min;
+}
+function sessAction(a){
+  if (a === 'cancel'){ closeSheet(); return; }
+  if (a === 'train' || a === 'walk'){
+    const k = todayKey(), ck = currentWorkoutKey();
+    state.sess = {start:Date.now(), k, kind:a, key: a === 'train' ? ck : null, name: a === 'train' ? WORKOUTS[ck].name + ' antrenmanı' : 'Eğimli yürüyüş'};
+    if (a === 'train'){ pickedWorkout = ck; ensureWorkout(dayLog(k), ck); }
+    save(); closeSheet(); renderSess(); toast('Sayaç başladı. Kolay gelsin!');
+    if (a === 'train') go('workout');
+    return;
+  }
+  if (a === 'discard'){ state.sess = null; save(); closeSheet(); renderSess(); toast('Sayaç sıfırlandı, kaydedilmedi'); return; }
+  if (a === 'finish'){
+    const kind = state.sess && state.sess.kind, min = sessFinish();
+    save(); closeSheet(); render(); toast((kind === 'walk' ? 'Yürüyüş' : 'Antrenman') + ' kaydedildi: ' + min + ' dk');
+  }
+}
+document.addEventListener('click', e => { if (e.target.id === 'sheetBg') closeSheet(); });
 function ensureWorkout(l, wk){ if (!l.w || l.w.key !== wk) l.w = {key:wk, ex:{}, done:false}; return l.w; }
 document.addEventListener('pointerdown', unlockAudio, {passive:true});
+/* coach links: fill in the full briefing at tap time (fresh time and data), copy it as a fallback, let the link open Claude */
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-talk], a[data-ext]'); if (!a) return;
+  const voice = a.dataset.talk === 'voice', q = a.dataset.talk ? '' : (a.dataset.ext || (document.getElementById('chatIn') || {}).value || '').trim();
+  if (!a.dataset.talk && !q){ e.preventDefault(); const er = document.getElementById('chatErr'); if (er){ er.textContent = 'Önce sorunu yaz.'; er.hidden = false; } return; }
+  const body = coachPrompt(q || 'Bugün ne yapacağım?', voice);
+  a.href = 'https://claude.ai/new?q=' + encodeURIComponent(body);
+  try { navigator.clipboard.writeText(body).catch(() => {}); } catch(_){}
+  const n = document.getElementById('talkNote');
+  if (n){ n.textContent = (voice ? 'Claude açılıyor. Koçun ilk cevabı gelince ses dalgası düğmesine bas ve konuş.' : 'Claude açılıyor.') + ' Metin kutusu boş gelirse yapıştır: bütün bilgilerin panoya kopyalandı.'; n.hidden = false; }
+});
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset, k = todayKey();
@@ -1730,7 +1907,13 @@ document.addEventListener('click', e => {
     else toast(u);
     return;
   }
-  if (d.act === 'finish'){ const l = dayLog(k), w = ensureWorkout(l, currentWorkoutKey()); w.done = true; save(); render(); toast('Antrenman kaydedildi'); window.scrollTo(0, document.body.scrollHeight); return; }
+  if (b.id === 'hdrClock') return sessTap();
+  if (d.sess) return sessAction(d.sess);
+  if (d.act === 'finish'){
+    const running = state.sess && state.sess.kind === 'train', min = running ? sessFinish() : 0;
+    const l = dayLog(k), w = ensureWorkout(l, currentWorkoutKey()); w.done = true; if (min) w.min = min;
+    save(); render(); toast('Antrenman kaydedildi' + (min ? ': ' + min + ' dk' : '')); window.scrollTo(0, document.body.scrollHeight); return;
+  }
   if (d.act === 'unfinish'){ const l = dayLog(k); if (l.w) l.w.done = false; save(); render(); return; }
   if (d.rpe !== undefined){ const l = dayLog(k); if (l.w){ l.w.rpe = +d.rpe; save(); render(); toast(+d.rpe === 2 ? 'Not aldım. Ağırlık artışını acele etmeyeceğim.' : 'Not aldım'); } return; }
   if (d.act === 'measure'){
@@ -1744,7 +1927,7 @@ document.addEventListener('click', e => {
   if (d.act === 'pushOn'){ b.disabled = true; b.textContent = 'Açılıyor…'; enablePush(); return; }
   if (d.act === 'pushOff'){ disablePush(); return; }
   if (d.act === 'pushTest'){ pushApi('test', {device_id:deviceId()}).then(r => toast(r && r.result === 'ok' ? 'Deneme bildirimi gönderildi' : 'Gönderilemedi, bildirimleri kapatıp yeniden aç')).catch(() => toast('İnternet bağlantını kontrol et')); return; }
-  if (d.extask !== undefined){ const q = d.extask || (document.getElementById('chatIn') || {}).value || ''; if (!q.trim()){ const er = document.getElementById('chatErr'); if (er){ er.textContent = 'Önce sorunu yaz.'; er.hidden = false; } return; } window.open('https://claude.ai/new?q=' + encodeURIComponent(coachRules() + '\n\nSORUM: ' + q.trim()), '_blank'); return; }
+  if (d.delmem !== undefined){ state.mem.splice(+d.delmem, 1); save(); render(); return; }
   if (d.act === 'reset'){ confirmReset = true; render(); return; }
   if (d.act === 'resetNo'){ confirmReset = false; render(); return; }
   if (d.act === 'resetYes'){ confirmReset = false; settingsOpen = false; state = defaultState(); pickedWorkout = null; save(); render(); toast('Program bugünden başladı'); return; }
@@ -1761,7 +1944,6 @@ document.addEventListener('change', e => {
       .catch(() => toast('Bu dosya bir Cep Koçum yedeği değil'));
     return;
   }
-  if (el.dataset.setup){ state.setup = Object.assign({}, state.setup, {[el.dataset.setup]: el.checked}); save(); render(); return; }
   if (el.dataset.shop){ const [wk,i] = el.dataset.shop.split('|'); state.shop = {[wk]: Object.assign({}, state.shop[wk] || {}, {[i]: el.checked})}; save(); el.closest('label').classList.toggle('got', el.checked); return; }
   if (el.dataset.ex){
     const l = dayLog(todayKey()), w = ensureWorkout(l, el.dataset.w), arr = w.ex[el.dataset.ex] = w.ex[el.dataset.ex] || [];
@@ -1774,10 +1956,14 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('toggle', e => {
   if (e.target.id === 'settingsBox') settingsOpen = e.target.open;
-  if (e.target.id === 'setupBox') setupOpen = e.target.open;
   if (e.target.id === 'guideBox') guideOpen = e.target.open;
 }, true);
 document.addEventListener('submit', e => {
+  if (e.target.id === 'memForm'){
+    e.preventDefault();
+    const v = document.getElementById('memIn').value.trim(); if (!v) return;
+    addMemory(v, 'sen'); memDraft = ''; save(); render(); toast('Koçun bunu hatırlayacak'); return;
+  }
   if (e.target.id !== 'composer') return;
   e.preventDefault();
   if (chatBusy){ chatCtl && chatCtl.abort(); return; }
