@@ -194,6 +194,17 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu
 .pthumb{position:relative;width:44px;height:44px;flex:0 0 auto}
 .pthumb img{width:44px;height:44px;object-fit:cover;border-radius:8px;display:block}
 .pthumb button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(10,14,20,.8);color:#fff;font-size:13px;line-height:1;padding:0;cursor:pointer}
+.pview3{margin-top:12px}
+.pview3 figure{margin:0;width:100%}
+.pimgbtn{position:absolute;inset:0;padding:0;border:0;background:none;cursor:zoom-in}
+.pimgbtn img{width:100%;height:100%;object-fit:cover;display:block}
+.pposelbl{position:absolute;left:6px;bottom:6px;font-size:12px;font-weight:700;color:#fff;background:rgba(10,14,20,.6);padding:2px 8px;border-radius:99px;pointer-events:none}
+.pviewer{position:fixed;inset:0;z-index:80;background:#000;display:flex;align-items:center;justify-content:center}
+.pviewer img{width:100vw;height:100vh;object-fit:contain;display:block}
+.pv-close{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:12px;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.pv-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-size:38px;line-height:1;cursor:pointer}
+.pv-prev{left:8px} .pv-next{right:8px}
+.pv-cap{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;font-size:13px;font-weight:700;opacity:.85;margin:0}
 .pview{grid-template-columns:repeat(2,minmax(0,1fr))}
 .pview img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block}
 .pdelask{position:absolute;left:0;right:0;top:0;aspect-ratio:3/4;border-radius:10px;background:rgba(10,14,20,.78);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px}
@@ -1164,7 +1175,7 @@ function compressImage(file){
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), img = new Image();
     img.onload = () => {
-      const max = 900, sc = Math.min(1, max / Math.max(img.width, img.height));
+      const max = 1600, sc = Math.min(1, max / Math.max(img.width, img.height)); /* sharp enough for the full-screen viewer */
       const c = document.createElement('canvas'); c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
       c.toBlob(b => b ? res(b) : rej(new Error('sıkıştırılamadı')), 'image/jpeg', 0.82);
@@ -1231,16 +1242,40 @@ async function openPhotoDay(d){
   const dt = parseKey(d), nDay = daysBetween(state.start, d) + 1;
   const list = all.filter(p => p.d === d).sort((a,b) => Object.keys(POSES).indexOf(a.pose) - Object.keys(POSES).indexOf(b.pose) || String(a.id).localeCompare(String(b.id)));
   let h = `<div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;margin-top:0"><div style="min-width:0"><h3>${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}</h3><p class="muted small">${DAYNAMES[dt.getDay()]}${nDay > 0 ? ' · ' + nDay + '. gün' : ''} · ${list.length} fotoğraf</p></div><button type="button" class="iconbtn" data-act="photoClose" aria-label="Kapat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
+  photoView = list.map(p => ({url: url(p.blob), label: POSES[p.pose] + ' · ' + dShort(p.d)}));
   h += list.length
-    ? `<div class="pgrid pview">${list.map(p => `<figure><img src="${url(p.blob)}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}">${photoDel === p.id
+    ? `<div class="pslots pview3">${list.map((p, i) => `<figure class="pslot filled"><button type="button" class="pimgbtn" data-pview="${i}" aria-label="${POSES[p.pose]} fotoğrafını büyüt"><img src="${photoView[i].url}" alt="${POSES[p.pose]} poz, ${dShort(p.d)}"></button>${photoDel === p.id
         ? `<div class="pdelask"><span>Silinsin mi?</span><button type="button" class="btn" data-act="pdelYes">Sil</button><button type="button" class="btn" data-act="pdelNo">Vazgeç</button></div>`
-        : `<button type="button" class="pdelx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button>`}<figcaption>${POSES[p.pose]}</figcaption></figure>`).join('')}</div>`
+        : `<button type="button" class="pdelx" data-pdel="${p.id}" aria-label="${POSES[p.pose]} fotoğrafını sil">×</button><span class="pposelbl">${POSES[p.pose]}</span>`}</figure>`).join('')}</div>`
     : `<p class="muted small" style="margin-top:14px;text-align:center;padding:18px 0">Bu tarihte fotoğraf yok.</p>`;
   h += `<button type="button" class="btn full" data-act="photoClose" style="margin-top:14px">Kapat</button>`;
   photoOpen = d;
   openSheet(h);
   const s = document.querySelector('#sheetBg .sheet'); if (s) s.classList.add('photosheet');
 }
+/* full-screen viewer: one photo at its real proportions, arrows and swipe for previous / next */
+let photoView = [], viewIdx = 0;
+function openViewer(i){
+  if (!photoView.length) return;
+  viewIdx = (i + photoView.length) % photoView.length;
+  let v = document.getElementById('pviewer');
+  if (!v){
+    v = document.createElement('div'); v.id = 'pviewer'; v.className = 'pviewer'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true');
+    v.innerHTML = `<img id="pvImg" alt=""><button type="button" class="pv-close" data-act="viewClose" aria-label="Kapat">×</button>
+      <button type="button" class="pv-nav pv-prev" data-act="viewPrev" aria-label="Önceki fotoğraf">‹</button><button type="button" class="pv-nav pv-next" data-act="viewNext" aria-label="Sonraki fotoğraf">›</button>
+      <p class="pv-cap" id="pvCap"></p>`;
+    let sx = null;
+    v.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+    v.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) openViewer(viewIdx + (dx < 0 ? 1 : -1)); }, {passive:true});
+    document.body.appendChild(v);
+  }
+  const it = photoView[viewIdx];
+  document.getElementById('pvImg').src = it.url; document.getElementById('pvImg').alt = it.label;
+  document.getElementById('pvCap').textContent = it.label + '  ·  ' + (viewIdx + 1) + '/' + photoView.length;
+  v.querySelectorAll('.pv-nav').forEach(b => b.hidden = photoView.length < 2);
+}
+function closeViewer(){ const v = document.getElementById('pviewer'); if (v) v.remove(); }
+document.addEventListener('keydown', e => { if (!document.getElementById('pviewer')) return; if (e.key === 'ArrowRight') openViewer(viewIdx + 1); else if (e.key === 'ArrowLeft') openViewer(viewIdx - 1); else if (e.key === 'Escape') closeViewer(); });
 async function analyzePhotos(btn){
   const out = document.getElementById('photoAI');
   const list = (await PDB.all()).filter(p => p.pose === photoPose).sort((a,b) => a.d.localeCompare(b.d) || String(a.id).localeCompare(String(b.id)));
@@ -2189,7 +2224,7 @@ function checkAlerts(hm){
    EVENTS
    ========================================================= */
 /* leaving a tab closes any preview there, so coming back always shows today */
-function go(t){ if (t !== tab){ pickedWorkout = null; photoOpen = null; photoDel = null; closeSheet(); } tab = t; lsSet('cepkocum-tab', tab); window.scrollTo(0,0); render(); }
+function go(t){ if (t !== tab){ pickedWorkout = null; photoOpen = null; photoDel = null; closeSheet(); closeViewer(); } tab = t; lsSet('cepkocum-tab', tab); window.scrollTo(0,0); render(); }
 /* header stopwatch: start and finish with a confirmation. The start is a timestamp, so it keeps counting
    with the screen off or the app closed; finishing records the minutes and ticks the workout or the walk. */
 const fmtDur = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60); return h ? h+':'+pad(m)+':'+pad(s%60) : pad(m)+':'+pad(s%60); };
@@ -2290,6 +2325,10 @@ document.addEventListener('click', e => {
   if (d.alarmSet){ lsSet('cepkocum-alarm', d.alarmSet); render(); if (d.alarmSet === 'on') beep(); toast('Alarm sesi ' + (d.alarmSet === 'on' ? 'açık' : 'kapalı')); return; }
   if (d.pose){ photoPose = d.pose; photoDel = null; renderPhotos(); return; }
   /* photos: pick a date, that day's photos open in the card; Kapat closes them */
+  if (d.pview !== undefined){ openViewer(+d.pview); return; }
+  if (d.act === 'viewPrev'){ openViewer(viewIdx - 1); return; }
+  if (d.act === 'viewNext'){ openViewer(viewIdx + 1); return; }
+  if (d.act === 'viewClose'){ closeViewer(); return; }
   if (d.act === 'photoSave'){ saveStaged(); return; }
   if (d.unstage){ const x = photoStage.find(s => s.id === d.unstage); if (x) URL.revokeObjectURL(x.url); photoStage = photoStage.filter(s => s.id !== d.unstage); renderPhotos(); return; }
   if (d.act === 'photoClose'){ photoOpen = null; photoDel = null; closeSheet(); const pd = document.getElementById('photoDate'); if (pd) pd.value = ''; return; }
